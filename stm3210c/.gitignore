@@ -1,0 +1,6 @@
+bin/
+stm3210c.uvgui.*
+*.lst
+*.bak
+*.dep
+stm3210c.uvopt

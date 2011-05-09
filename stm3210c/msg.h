@@ -9,24 +9,45 @@ enum msg_id
 {
 	SUBSCRIBE,
 	UNSUBSCRIBE,
-	DATA,
 	SET_SAMPLERATE,
-	GET_SAMPLERATE
+	DATA,
 };
 
-union foo
+struct msg_head
 {
-	struct msgSubscribe
-	{
-		int Channel;
-		xQueueHandle Destination;
-	} msg0;
+	enum msg_id Id;
+};
 
-	struct msgUnsubscribe
-	{
-		int Channel;
+#define MSGID() msg##__LINE__
+
+#define DEFINE_MSG(NAME, ARGS) \
+struct msg_ ## NAME \
+{ \
+	struct msg_head head; \
+	ARGS \
+} NAME;
+
+union msg_union
+{
+	DEFINE_MSG(subscribe,
+		int channel;
 		xQueueHandle Destination;
-	} msg1;
+	)
+
+	DEFINE_MSG(unsubscribe,
+		int channel;
+		xQueueHandle Destination;
+	)
+
+	DEFINE_MSG(set_samplerate,
+		int channel;
+		int rate;
+	)
+
+	DEFINE_MSG(data,
+		int channel;
+		int value;
+	)
 };
 
 

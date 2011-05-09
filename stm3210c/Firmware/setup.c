@@ -4,8 +4,8 @@
 
 #include <stdio.h>
 
-#include <stm32f10x_cl.h>
-#include <stm32f10x_type.h>
+#include <stm32f10x.h>
+#include <system_stm32f10x_cl.h>
 
 /*
  * Configure the clocks, GPIO and other peripherals.

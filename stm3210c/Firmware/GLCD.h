@@ -58,7 +58,13 @@
 #define Line7              168
 #define Line8              192
 #define Line9              216
+#define Horizontal     0x00
+#define Vertical       0x01
 
+/**
+ * Currently, the coordinate system is a bit cumbersome:
+ * the origin (0, 0) is in the upper right corner
+ */
 
 extern void GLCD_init           (void);
 extern void GLCD_clear          (unsigned short color);
@@ -68,6 +74,9 @@ extern void GLCD_displayChar    (unsigned int ln, unsigned int col, unsigned cha
 extern void GLCD_displayStringLn(unsigned int ln, unsigned char *s);
 extern void GLCD_bitmap         (unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned char *bitmap);
 extern void GLCD_clearLn        (unsigned int ln);
-extern void GLCD_putPixel       (unsigned int x, unsigned int y);
+extern void GLCD_putPixel       (unsigned int y, unsigned int x);
+extern void GLCD_drawLine(uint8_t y, uint16_t x, uint16_t Length, uint8_t Direction);
+extern void GLCD_drawRect(uint8_t y, uint16_t x, uint8_t Height, uint16_t Width);
+extern void GLCD_fillRect(uint8_t y, uint16_t x, uint8_t Height, uint16_t Width);
 
 #endif /* _GLCD_H */

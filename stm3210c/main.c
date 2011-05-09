@@ -3,17 +3,16 @@
  */
 
 #include <stdio.h>
-#include "msg.h"
+
 /* Scheduler includes. */
 #include "FreeRTOS.h"
-#include "stm32f10x_conf.h"
-#include "stm32f10x_cl.h"
 #include "task.h"
 #include "semphr.h"
 #include "queue.h"
 #include "setup.h"
 #include "assert.h"
 #include "GLCD.h"
+#include "stm3210c_eval_ioe.h"
 
 /*-----------------------------------------------------------*/
 
@@ -21,10 +20,9 @@
 
 xSemaphoreHandle lcdLock;
 
-/**
- * LCD Module init
- */
-static void init_display () {
+static void initDisplay () {
+  /* LCD Module init */
+
   lcdLock = xSemaphoreCreateMutex();
 
   GLCD_init();
@@ -35,10 +33,7 @@ static void init_display () {
   GLCD_displayStringLn(Line4, " Systems");
 }
 
-/**
- * Display 1 2 3 with shifting colours
- */
-void lcdTask(void *params) {
+static void lcdTask(void *params) {
   unsigned short col1 = Blue, col2 = Red, col3 = Green;
   unsigned short t;
 
@@ -58,12 +53,13 @@ void lcdTask(void *params) {
 
 /*-----------------------------------------------------------*/
 
+/**
+ * Display stdout on the display
+ */
+
 xQueueHandle printQueue;
 
-/**
- * Redirect stdout to the display
- */
-void printTask(void *params) {
+static void printTask(void *params) {
   unsigned char str[21] = "                    ";
   portTickType lastWakeTime = xTaskGetTickCount();
   int i;
@@ -84,7 +80,7 @@ void printTask(void *params) {
   }
 }
 
-/* Retarget printing */
+/* Retarget printing to the serial port 1 */
 int fputc(int ch, FILE *f) {
   unsigned char c = ch;
   xQueueSend(printQueue, &c, 0);
@@ -94,9 +90,10 @@ int fputc(int ch, FILE *f) {
 /*-----------------------------------------------------------*/
 
 /**
- * LED flashing
+ * Blink the LEDs to show that we are alive
  */
-void ledTask(void *params) {
+
+static void ledTask(void *params) {
   const u8 led_val[8] = { 0x01,0x03,0x07,0x0F,0x0E,0x0C,0x08,0x00 };
   int cnt = 0;
 
@@ -109,19 +106,130 @@ void ledTask(void *params) {
 
 /*-----------------------------------------------------------*/
 
+/**
+ * Register a callback that will be invoked when a touch screen
+ * event occurs within a given rectangle
+ *
+ * NB: the callback function should have a short execution time,
+ * since long-running callbacks will prevent further events from
+ * being generated
+ */
+
+typedef struct {
+  u16 lower, upper, left, right;
+  void *data;
+  void (*callback)(u16 x, u16 y, u16 pressure, void *data);
+} TSCallback;
+
+static TSCallback callbacks[64];
+static u8 callbackNum = 0;
+
+void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
+                        void (*callback)(u16 x, u16 y, u16 pressure, void *data),
+						void *data) {
+  callbacks[callbackNum].lower    = lower;
+  callbacks[callbackNum].upper    = upper;
+  callbacks[callbackNum].left     = left;
+  callbacks[callbackNum].right    = right;
+  callbacks[callbackNum].callback = callback;
+  callbacks[callbackNum].data     = data;
+  callbackNum++;
+}
+
+static void touchScreenTask(void *params) {
+  portTickType lastWakeTime = xTaskGetTickCount();
+  TS_STATE *ts_state;
+  u8 pressed = 0;
+  u8 i;
+
+  for (;;) {
+    ts_state = IOE_TS_GetState();
+
+	if (pressed) {
+	  if (!ts_state->TouchDetected)
+	    pressed = 0;
+	} else if (ts_state->TouchDetected) {
+	  for (i = 0; i < callbackNum; ++i) {
+		if (callbacks[i].left  <= ts_state->X &&
+		    callbacks[i].right >= ts_state->X &&
+		    callbacks[i].lower >= ts_state->Y &&
+		    callbacks[i].upper <= ts_state->Y)
+		  callbacks[i].callback(ts_state->X, ts_state->Y, ts_state->Z,
+		                        callbacks[i].data);
+	  }													
+	  pressed = 1;
+	}
+
+    if (ts_state->TouchDetected) {
+	  printf("%d,%d,%d ", ts_state->X, ts_state->Y, ts_state->Z);
+	}
+
+	vTaskDelayUntil(&lastWakeTime, 100 / portTICK_RATE_MS);
+  }
+}
+
+/*-----------------------------------------------------------*/
+
+xQueueHandle buttonQueue;
+
+static void highlightButton(u16 x, u16 y, u16 pressure, void *data) {
+  u16 d = (int)data;
+  xQueueSend(buttonQueue, &d, 0);
+}
+
+static void setupButtons(void) {
+  u16 i;
+  buttonQueue = xQueueCreate(4, sizeof(u16));
+  
+  for (i = 0; i < 3; ++i) {
+    GLCD_drawRect(30 + 60*i, 30, 40, 40);
+	registerTSCallback(WIDTH - 30 - 40, WIDTH - 30, 30 + 60*i + 40, 30 + 60*i,
+	                   &highlightButton, (void*)i);
+  }
+}
+
+static void highlightButtonsTask(void *params) {
+  u16 d;
+
+  for (;;) {
+    xQueueReceive(buttonQueue, &d, portMAX_DELAY);
+
+    xSemaphoreTake(lcdLock, portMAX_DELAY);
+    GLCD_setTextColor(Red);
+    GLCD_fillRect(31 + 60*d, 31, 38, 38);
+    GLCD_setTextColor(Blue);
+    xSemaphoreGive(lcdLock);
+
+	vTaskDelay(500 / portTICK_RATE_MS);
+
+    xSemaphoreTake(lcdLock, portMAX_DELAY);
+    GLCD_setTextColor(White);
+    GLCD_fillRect(31 + 60*d, 31, 38, 38);
+    GLCD_setTextColor(Blue);
+    xSemaphoreGive(lcdLock);
+  }
+}
+
+/*-----------------------------------------------------------*/
+
 /*
  * Entry point of program execution
  */
 int main( void )
 {
   prvSetupHardware();
+  IOE_Config();
 
-  init_display();
   printQueue = xQueueCreate(128, 1);
+
+  initDisplay();
+  setupButtons();
 
   xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL);
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL);
   xTaskCreate(ledTask, "led", 100, NULL, 1, NULL);
+  xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL);
+  xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL);
 
   printf("Setup complete ");  // this is redirected to the display
 

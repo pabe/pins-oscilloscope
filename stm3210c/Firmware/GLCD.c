@@ -19,7 +19,7 @@
 
 #pragma diag_suppress=550
 
-#include <stm32f10x_cl.h>
+#include <stm32f10x.h>
 #include "GLCD.h"
 #include "font.h"
 
@@ -284,6 +284,66 @@ void GLCD_putPixel(unsigned int x, unsigned int y) {
   wr_dat(TextColor);
 }
 
+/**
+  * @brief  Displays a line.
+  * @param  Xpos: specifies the X position.
+  * @param  Ypos: specifies the Y position.
+  * @param  Length: line length.
+  * @param  Direction: line direction.
+  *   This parameter can be one of the following values: Vertical or Horizontal.
+  * @retval None
+  */
+void GLCD_drawLine(uint8_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Direction) {
+  u16 i;
+
+  wr_reg(0x21, Ypos);
+
+  if (Direction == Horizontal) {
+    wr_reg(0x20, Xpos);
+    wr_cmd(0x22);
+    for(i = 0; i < Length; i++)
+      wr_dat(TextColor);
+  } else {
+    for(i = 0; i < Length; i++) {
+      wr_reg(0x20, Xpos);
+      wr_cmd(0x22);
+      wr_dat(TextColor);
+	  ++Xpos;
+    }
+  }
+}
+
+/**
+  * @brief  Displays a rectangle.
+  * @param  Xpos: specifies the X position.
+  * @param  Ypos: specifies the Y position.
+  * @param  Height: display rectangle height.
+  * @param  Width: display rectangle width.
+  * @retval None
+  */
+void GLCD_drawRect(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
+{
+  GLCD_drawLine(Xpos, Ypos, Width, Horizontal);
+  GLCD_drawLine((Xpos + Height), Ypos, Width, Horizontal);
+  
+  GLCD_drawLine(Xpos, Ypos, Height, Vertical);
+  GLCD_drawLine(Xpos, Ypos + Width, Height + 1, Vertical);
+}
+
+/**
+  * @brief  Displays a filled rectangle.
+  * @param  Xpos: specifies the X position.
+  * @param  Ypos: specifies the Y position.
+  * @param  Height: display rectangle height.
+  * @param  Width: display rectangle width.
+  * @retval None
+  */
+void GLCD_fillRect(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
+{
+  u16 i;
+  for (i = 0; i <= Height; ++i)
+    GLCD_drawLine(Xpos + i, Ypos, Width + 1, Horizontal);
+}
 
 /*******************************************************************************
 * Set foreground color                                                         *

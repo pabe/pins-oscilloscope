@@ -4,3 +4,4 @@ stm3210c.uvgui.*
 *.bak
 *.dep
 stm3210c.uvopt
+stm3210c.map

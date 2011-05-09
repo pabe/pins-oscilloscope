@@ -3,7 +3,7 @@
  */
 
 #include <stdio.h>
-
+#include "msg.h"
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "stm32f10x_conf.h"
@@ -123,6 +123,7 @@ int main( void )
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL);
   xTaskCreate(ledTask, "led", 100, NULL, 1, NULL);
 
+printf("foo: %i\n", sizeof(union foo));
   printf("Setup complete ");  // this is redirected to the display
 
   vTaskStartScheduler();

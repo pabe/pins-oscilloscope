@@ -50,5 +50,5 @@ union msg_union
 	)
 };
 
-
+#define MSG_MAX_SIZE (sizeof(union msg_union))
 #endif /* MSG_H */

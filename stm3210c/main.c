@@ -16,6 +16,8 @@
 
 /*-----------------------------------------------------------*/
 
+#include "ipc.h"
+
 #define WIDTH 320
 
 xSemaphoreHandle lcdLock;
@@ -221,6 +223,8 @@ int main( void )
   IOE_Config();
 
   printQueue = xQueueCreate(128, 1);
+
+  ipc_init();
 
   initDisplay();
   setupButtons();

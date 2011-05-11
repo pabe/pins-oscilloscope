@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>pins-oscilloscope</TargetName>
+      <TargetName>STM32F107VC</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
@@ -43,8 +43,8 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\bin\</OutputDirectory>
-          <OutputName>stm3210c</OutputName>
+          <OutputDirectory>.\bin\stm32f107vc\</OutputDirectory>
+          <OutputName>oscilloscope</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
@@ -501,7 +501,7 @@
       </Groups>
     </Target>
     <Target>
-      <TargetName>pins-oscilliscope-simulator</TargetName>
+      <TargetName>STM32F103VB</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
@@ -537,8 +537,8 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\bin\</OutputDirectory>
-          <OutputName>stm3210c</OutputName>
+          <OutputDirectory>.\bin\stm32f103vb\</OutputDirectory>
+          <OutputName>oscilloscope</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>

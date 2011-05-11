@@ -1,7 +1,13 @@
 
+//#include "FreeRTOS.h"
+//#include "queue.h"
+
 #include "config.h"
 #include "ipc.h"
 #include "ipc_msg.h"
+
+#warning removing asserts...
+#define assert(x)
 
 xQueueHandle ipc_queue[ipc_mod_LAST+1];
 
@@ -39,3 +45,20 @@ void ipc_finalizer(void)
     }
   }
 }
+
+int ipc_put(enum ipc_modules dest, const union ipc_msg *msg)
+{
+  assert(dest <= ipc_mod_LAST);
+
+  /* for now, no blocking */
+  return xQueueSendToBack(ipc_queue[dest], msg, 0) == pdTRUE ? 0 : 1;
+}
+
+int ipc_get(enum ipc_modules src, union ipc_msg *msg)
+{
+  assert(src <= ipc_mod_LAST);
+
+  /* for now, no blocking */
+  return xQueueReceive(ipc_queue[src], msg, 0) == pdTRUE ? 0 : 1;
+}
+

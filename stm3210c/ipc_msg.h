@@ -5,7 +5,9 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-enum msg_id
+#include "ipc.h"
+
+enum ipc_msg_id
 {
 	SUBSCRIBE,
 	UNSUBSCRIBE,
@@ -15,28 +17,26 @@ enum msg_id
 
 struct msg_head
 {
-	enum msg_id Id;
+	enum ipc_msg_id Id;
 };
 
-#define MSGID() msg##__LINE__
-
 #define DEFINE_MSG(NAME, ARGS) \
-struct msg_ ## NAME \
+struct ipc_msg_ ## NAME \
 { \
-	struct msg_head head; \
+	enum ipc_msg_id head_id; \
 	ARGS \
 } NAME;
 
-union msg_union
+union ipc_msg
 {
 	DEFINE_MSG(subscribe,
 		int channel;
-		xQueueHandle Destination;
+		enum ipc_modules Destination;
 	)
 
 	DEFINE_MSG(unsubscribe,
 		int channel;
-		xQueueHandle Destination;
+		enum ipc_modules Destination;
 	)
 
 	DEFINE_MSG(set_samplerate,
@@ -50,5 +50,5 @@ union msg_union
 	)
 };
 
-#define MSG_MAX_SIZE (sizeof(union msg_union))
+#define MSG_MAX_SIZE (sizeof(union ipc_msg))
 #endif /* MSG_H */

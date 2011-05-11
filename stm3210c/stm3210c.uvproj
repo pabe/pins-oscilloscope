@@ -447,9 +447,24 @@
               <FilePath>.\main.c</FilePath>
             </File>
             <File>
-              <FileName>msg.h</FileName>
+              <FileName>ipc.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\msg.h</FilePath>
+              <FilePath>.\ipc.h</FilePath>
+            </File>
+            <File>
+              <FileName>ipc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ipc.c</FilePath>
+            </File>
+            <File>
+              <FileName>ipc_msg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\ipc_msg.h</FilePath>
+            </File>
+            <File>
+              <FileName>config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\config.h</FilePath>
             </File>
           </Files>
         </Group>

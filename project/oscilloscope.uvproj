@@ -466,6 +466,16 @@
               <FileType>5</FileType>
               <FilePath>.\config.h</FilePath>
             </File>
+            <File>
+              <FileName>measure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\measure.c</FilePath>
+            </File>
+            <File>
+              <FileName>measure.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\measure.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -959,6 +969,16 @@
               <FileName>config.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\config.h</FilePath>
+            </File>
+            <File>
+              <FileName>measure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\measure.c</FilePath>
+            </File>
+            <File>
+              <FileName>measure.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\measure.h</FilePath>
             </File>
           </Files>
         </Group>

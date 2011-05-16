@@ -11,6 +11,8 @@
 
 xQueueHandle ipc_queue[ipc_mod_LAST+1];
 
+static xQueueHandle ipc_addr_resolve(const struct ipc_addr* addr);
+
 int ipc_init(void)
 {
   int i;
@@ -46,9 +48,24 @@ void ipc_finalizer(void)
   }
 }
 
-xQueueHandle ipc_resolv_addr(const struct ipc_addr* addr)
+static xQueueHandle ipc_addr_resolve(const struct ipc_addr* addr)
 {
+  assert(addr);
+
   return ipc_queue[addr->mod];
+}
+
+int ipc_addr_lookup(enum ipc_modules mod, struct ipc_addr* addr)
+{
+  assert(addr);
+
+  addr->mod = mod;
+  return 0;
+}
+
+int ipc_register(const struct ipc_addr* addr)
+{
+  return 0;
 }
 
 portBASE_TYPE ipc_put(
@@ -59,18 +76,18 @@ portBASE_TYPE ipc_put(
   assert(dest);
   assert(msg);
 
-  return xQueueSendToBack(ipc_resolv_addr(dest), msg, xTicksToWait);
+  return xQueueSendToBack(ipc_addr_resolve(dest), msg, xTicksToWait);
 }
 
 portBASE_TYPE ipc_get(
-    const struct ipc_addr *dest,
+    const struct ipc_addr *addr,
     struct ipc_msg *msg,
     portTickType xTicksToWait)
 {
   assert(dest);
   assert(msg);
-
-  return xQueueReceive(ipc_resolv_addr(dest), msg, xTicksToWait);
+  
+  return xQueueReceive(ipc_addr_resolve(addr), msg, xTicksToWait);
 }
 
 #if 0

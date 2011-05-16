@@ -40,14 +40,15 @@ struct ipc_msg;
 int ipc_init(void);
 void ipc_finalizer(void);
 
-xQueueHandle ipc_resolv_addr(const struct ipc_addr* addr);
+int ipc_addr_lookup(enum ipc_modules mod, struct ipc_addr* addr);
+int ipc_register(const struct ipc_addr* addr);
 
 portBASE_TYPE ipc_put(
     const struct ipc_addr *dest,
     const struct ipc_msg *msg,
     portTickType xTicksToWait);
 portBASE_TYPE ipc_get(
-    const struct ipc_addr *dest,
+    const struct ipc_addr *addr,
     struct ipc_msg *msg,
     portTickType xTicksToWait);
 

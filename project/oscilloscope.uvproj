@@ -476,6 +476,11 @@
               <FileType>5</FileType>
               <FilePath>.\measure.h</FilePath>
             </File>
+            <File>
+              <FileName>ipc_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ipc_task.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -979,6 +984,11 @@
               <FileName>measure.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\measure.h</FilePath>
+            </File>
+            <File>
+              <FileName>ipc_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ipc_task.c</FilePath>
             </File>
           </Files>
         </Group>

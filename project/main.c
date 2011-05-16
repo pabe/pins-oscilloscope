@@ -14,6 +14,7 @@
 #include "GLCD.h"
 #include "stm3210c_eval_ioe.h"
 
+#include "ipc_task.h"
 /*-----------------------------------------------------------*/
 
 #include "ipc.h"
@@ -237,6 +238,8 @@ int main( void )
   xTaskCreate(ledTask, "led", 100, NULL, 1, NULL);
   xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL);
   xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL);
+  xTaskCreate(task_ipc_testA, "IPC test taskA", 100, NULL, 1, NULL);
+  xTaskCreate(task_ipc_testB, "IPC test taskB", 100, NULL, 1, NULL);
 
   printf("Setup complete ");  // this is redirected to the display
 

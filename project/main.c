@@ -224,7 +224,10 @@ int main( void )
 
   printQueue = xQueueCreate(128, 1);
 
-  ipc_init();
+  if(0 != ipc_init())
+  {
+    /* TODO: handle failure */
+  }
 
   initDisplay();
   setupButtons();

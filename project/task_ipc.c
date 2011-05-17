@@ -1,7 +1,13 @@
-#include "ipc_task.h"
+
+#include <stdio.h>
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "task_ipc.h"
 #include "ipc.h"
 #include "ipc_msg.h"
-#include <stdio.h>
+
 
 void task_ipc_testA(void *p)
 {

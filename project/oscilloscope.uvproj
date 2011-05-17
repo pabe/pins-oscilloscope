@@ -477,9 +477,9 @@
               <FilePath>.\measure.h</FilePath>
             </File>
             <File>
-              <FileName>ipc_task.c</FileName>
+              <FileName>task_ipc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\ipc_task.c</FilePath>
+              <FilePath>.\task_ipc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -986,9 +986,9 @@
               <FilePath>.\measure.h</FilePath>
             </File>
             <File>
-              <FileName>ipc_task.c</FileName>
+              <FileName>task_ipc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\ipc_task.c</FilePath>
+              <FilePath>.\task_ipc.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -14,10 +14,10 @@
 #include "GLCD.h"
 #include "stm3210c_eval_ioe.h"
 
-#include "ipc_task.h"
 /*-----------------------------------------------------------*/
 
 #include "ipc.h"
+#include "task_ipc.h"
 
 #define WIDTH 320
 

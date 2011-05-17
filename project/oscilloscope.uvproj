@@ -486,6 +486,11 @@
               <FileType>1</FileType>
               <FilePath>.\task_input_gpio.c</FilePath>
             </File>
+            <File>
+              <FileName>task_led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_led.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -999,6 +1004,11 @@
               <FileName>task_input_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_input_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_led.c</FilePath>
             </File>
           </Files>
         </Group>

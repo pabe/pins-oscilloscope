@@ -18,7 +18,7 @@
 
 #include "ipc.h"
 #include "task_ipc.h"
-
+#include "task_input_gpio.h"
 #define WIDTH 320
 
 xSemaphoreHandle lcdLock;
@@ -238,6 +238,7 @@ int main( void )
   xTaskCreate(ledTask, "led", 100, NULL, 1, NULL);
   xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL);
   xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL);
+  xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL);
   xTaskCreate(task_ipc_testA, "IPC test taskA", 100, NULL, 1, NULL);
   xTaskCreate(task_ipc_testB, "IPC test taskB", 100, NULL, 1, NULL);
 

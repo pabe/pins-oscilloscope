@@ -10,6 +10,7 @@
 
 struct ipc_fullmsg;
 struct ipc_io;
+struct ipc_addr;
 union ipc_msg;
 enum ipc_msg_id;
 

@@ -6,7 +6,6 @@
 
 #include "task_ipc.h"
 #include "ipc.h"
-#include "ipc_msg.h"
 
 static portBASE_TYPE task_ipc_testA_timeout(struct ipc_io *io);
 static portBASE_TYPE task_ipc_testA_msg(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg);

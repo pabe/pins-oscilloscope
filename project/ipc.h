@@ -7,6 +7,7 @@
 #include "queue.h"
 
 #include "ipc_forwards.h"
+
 typedef portBASE_TYPE (ipc_cb_timeout_t)(struct ipc_io *io);
 typedef portBASE_TYPE (ipc_cb_msg_t)(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg);
 
@@ -41,6 +42,8 @@ struct ipc_io
   } flags;
 };
 
+/* ipc.h should be the only one included from other subsystems */
+#include "ipc_msg.h"
 //extern xQueueHandle ipc_queue[ipc_mod_LAST+1];
 
 

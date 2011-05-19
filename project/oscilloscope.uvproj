@@ -477,11 +477,6 @@
               <FilePath>.\measure.h</FilePath>
             </File>
             <File>
-              <FileName>task_ipc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_ipc.c</FilePath>
-            </File>
-            <File>
               <FileName>task_input_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_input_gpio.c</FilePath>
@@ -490,6 +485,16 @@
               <FileName>task_led.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_led.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_ipc_testa.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_ipc_testa.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_ipc_testb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_ipc_testb.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -996,11 +1001,6 @@
               <FilePath>.\measure.h</FilePath>
             </File>
             <File>
-              <FileName>task_ipc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_ipc.c</FilePath>
-            </File>
-            <File>
               <FileName>task_input_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_input_gpio.c</FilePath>
@@ -1009,6 +1009,16 @@
               <FileName>task_led.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_led.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_ipc_testa.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_ipc_testa.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_ipc_testb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_ipc_testb.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -2,6 +2,8 @@
 #define __MEASURE_H_
 #define NUMBER_OF_CHANNELS 2  //Number of probes on the oscilloscope
 
+#define ADC_MAX ((1<<13)-1)
+
 typedef struct {
   ADC_TypeDef* ADC;		  // ADC to use
   uint8_t ADC_Channel;	  // ADC Channel to use.. (ADC_Channel_0, ADC_Channel_1 ... 17

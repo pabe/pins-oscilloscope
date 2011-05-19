@@ -224,7 +224,7 @@ int main( void )
   xTaskCreate(task_led, "LED Driver", 100, NULL, 1, NULL);
   xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL);
   xTaskCreate(task_ipc_testA, "IPC test taskA", 100, NULL, 1, NULL);
-  xTaskCreate(task_ipc_testB, "IPC test taskB", 100, NULL, 1, NULL);
+  xTaskCreate(task_ipc_testB, "IPC test taskB", 200, NULL, 1, NULL);
 
   printf("Setup complete ");  // this is redirected to the display
 

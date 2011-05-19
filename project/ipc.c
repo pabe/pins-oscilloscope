@@ -1,13 +1,16 @@
 
-//#include "FreeRTOS.h"
-//#include "queue.h"
+
+#include <string.h>
 
 #include "config.h"
 #include "ipc.h"
 #include "ipc_msg.h"
 
-#warning removing asserts...
-#define assert(x)
+#include "setup.h"
+#include "assert.h"
+
+//#warning removing asserts...
+//#define assert(x)
 
 xQueueHandle ipc_queue[ipc_mod_LAST+1];
 
@@ -18,11 +21,15 @@ int ipc_init(void)
   int i;
 
   ipc_queue[ipc_mod_display] =
-    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(struct ipc_msg));
+    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(struct ipc_fullmsg));
+  ipc_queue[ipc_mod_testA] =
+    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(struct ipc_fullmsg));
+  ipc_queue[ipc_mod_testB] =
+    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(struct ipc_fullmsg));
   ipc_queue[ipc_mod_input] =
-    xQueueCreate(IPC_QUEUE_LEN_INPUT, sizeof(struct ipc_msg));
+    xQueueCreate(IPC_QUEUE_LEN_INPUT, sizeof(struct ipc_fullmsg));
   ipc_queue[ipc_mod_measuring] =
-    xQueueCreate(IPC_QUEUE_LEN_MEASURING, sizeof(struct ipc_msg));
+    xQueueCreate(IPC_QUEUE_LEN_MEASURING, sizeof(struct ipc_fullmsg));
 
   /* check if any of the queues fail to init */
   for(i=0; i < sizeof(ipc_queue)/sizeof(xQueueHandle); i++)
@@ -55,64 +62,104 @@ static xQueueHandle ipc_addr_resolve(const struct ipc_addr* addr)
   return ipc_queue[addr->mod];
 }
 
-int ipc_addr_lookup(enum ipc_modules mod, struct ipc_addr* addr)
+portBASE_TYPE ipc_addr_lookup(
+    enum ipc_modules mod,
+    struct ipc_addr* addr)
 {
   assert(addr);
 
   addr->mod = mod;
-  return 0;
+  return pdTRUE;
 }
 
-int ipc_register(const struct ipc_addr* addr)
+portBASE_TYPE ipc_register(
+    struct ipc_io *io,
+    ipc_cb_timeout_t *cb_timeout,
+    ipc_cb_msg_t *cb_msg,
+    const struct ipc_addr *addr)
 {
-  return 0;
+  assert(io);
+  assert(cb_timeout);
+  assert(cb_msg);
+  assert(addr);
+
+  /* TODO: add support to see if an other task owns this one */
+  memset(io, 0, sizeof(struct ipc_io));
+
+  io->qh         = ipc_addr_resolve(addr);
+  io->cb_timeout = cb_timeout;
+  io->cb_msg     = cb_msg;
+  io->me         = *addr;
+  //memcpy(io->me, addr, sizeof(struct ipc_addr));
+  return pdTRUE;
 }
 
 portBASE_TYPE ipc_put(
+    struct ipc_io *io,
+    struct ipc_fullmsg *msg,
+    const struct ipc_addr *dest)
+{
+  assert(dest);
+  assert(msg);
+
+  msg->head.src = *dest;
+  return xQueueSendToBack(ipc_addr_resolve(dest), msg, 0);
+}
+
+portBASE_TYPE ipc_put2(
+    struct ipc_io *io,
     const struct ipc_addr *dest,
-    const struct ipc_msg *msg,
-    portTickType xTicksToWait)
+    struct ipc_fullmsg *msg,
+    struct ipc_fullmsg *response)
 {
+  portBASE_TYPE ret;
+  assert(io);
   assert(dest);
   assert(msg);
+  assert(response);
 
-  return xQueueSendToBack(ipc_addr_resolve(dest), msg, xTicksToWait);
-}
-
-portBASE_TYPE ipc_get(
-    const struct ipc_addr *addr,
-    struct ipc_msg *msg,
-    portTickType xTicksToWait)
-{
-  assert(dest);
-  assert(msg);
   
-  return xQueueReceive(ipc_addr_resolve(addr), msg, xTicksToWait);
+  /* TODO: use put().... */
+  msg->head.src = io->me;
+  if(pdFALSE == xQueueSendToBack(ipc_addr_resolve(dest), msg, portMAX_DELAY))
+  {
+    return pdFALSE;
+  }
+
+  /* now have we sent our control msg, setup the recv buffer and call loop*/
+  io->flags.waiting_for_result = 1;
+  io->recv_msg = response;
+
+  /* TODO: read timeout from io struct */
+  ret = ipc_loop(io, portMAX_DELAY);
+
+  /* clear the control struct */
+  io->flags.waiting_for_result = 0;
+  io->recv_msg = NULL;
+  return ret;
 }
 
-#if 0
-int ipc_loop(ipc_timeout *cb_timeout,
-             ipc_msg *cb_msg,
-             struct ipc_loop_opt *opt,
-             void *p)
+portBASE_TYPE ipc_loop(
+    struct ipc_io *io,
+    portTickType xTicksToWait)
 {
   while(1)
   {
     portBASE_TYPE ret;
-    struct ipc_msg msg;
-    struct ipc_msg_head msg_header;
+    struct ipc_fullmsg msg;
+    struct ipc_addr msg_src;
 
     /* TODO: for now wait forever */
-    ret = xQueueReceive(opt->q, &msg, portMAX_DELAY);
+    ret = xQueueReceive(io->qh, &msg, xTicksToWait);
 
     /* timeout? */
     if(ret == pdFALSE)
     {
-      if(!opt->flags.waiting_for_result)
+      if(!io->flags.waiting_for_result)
       {
         /* if there was a timeout and we not already in worker() */
         /* TODO: check return */
-        cb_timeout(opt, p);
+        io->cb_timeout(io);
       }
 
       continue;
@@ -121,38 +168,29 @@ int ipc_loop(ipc_timeout *cb_timeout,
     /* check if this is a reply */
     if(msg.head.reply)
     {
-      if(!opt->flags.waiting_for_result)
+      /* are we expecting a reply? */
+      if(io->recv_msg)
       {
-        /* TODO: signal errir */
+        return pdFALSE;
       }
-  
-      /* store result */
-      /* return with code got_result */
-      return 0;
+
+      /* we are called recursive here so it is ok to return */
+      *io->recv_msg = msg;
+      return pdTRUE;
     }
 
-    /* TODO: based on return we should maybe send a reply */
-    msg_header = msg.head;
-    if(cb_msg(&msg, opt, p) != 0)
+    /* TODO: no need anymore... */
+    /* save src address as the bad user may edit the head */
+    msg_src = msg.head.src;
+    if(pdFALSE == io->cb_msg(io, &msg.head.Id, &msg.payload))
     {
-      /* signal error */
-#if 0
-      /* send error */
-      case 0:
-      case 1:
-        /* send msg */
-
-      default:
-        /* TODO: DEBUG PRINT: Error */
-        return -1;
-#endif
+      return pdFALSE;
     }
 
     msg.head.reply = 1;
-    msg.datagram = 1;
-//    msg.head.src = opt->q;
-
-
+    if(pdFALSE == ipc_put(io, &msg, &msg_src))
+    {
+      return pdFALSE;
+    }
   }
 }
-#endif

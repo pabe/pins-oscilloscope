@@ -8,55 +8,117 @@
 #include "ipc.h"
 #include "ipc_msg.h"
 
+static portBASE_TYPE task_ipc_testA_timeout(struct ipc_io *io);
+static portBASE_TYPE task_ipc_testA_msg(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg);
 
 void task_ipc_testA(void *p)
 {
-  struct ipc_addr dest;
-
-  printf("test");
-  
-  if(0 != ipc_addr_lookup(ipc_mod_display, &dest))
-  {
-    printf("testA: ERROR");
-  }
-
+  struct ipc_addr me;
+  struct ipc_io io;
+  int error;
 
   while(1)
   {
-    struct ipc_msg msg;
-    vTaskDelay(2000 / portTICK_RATE_MS);
-    ipc_put(&dest, &msg, 0);
+    if(pdFALSE == ipc_addr_lookup(ipc_mod_testA, &me))
+    {
+      error = 0;
+      break;
+    }
+
+    /* register this address to current task */
+    if(pdFALSE == ipc_register(&io, task_ipc_testA_timeout, task_ipc_testA_msg, &me))
+    {
+      error = 1;
+      break;
+    }
+
+    if(pdFALSE == ipc_loop(&io, 5000/portTICK_RATE_MS))
+    {
+      error = 2;
+      break;
+    }
   }
+
+  /* if we are here then there is an error! */
+
+  while(1)
+  {
+    printf("testA ERROR %i! |", error);
+    vTaskDelay(2000 / portTICK_RATE_MS);
+  }
+
+  /* ask the kernel to kill me */
+  //  vTaskDelete(NULL);
 }
+
+static portBASE_TYPE task_ipc_testA_timeout(struct ipc_io *io)
+{
+  printf("testA work|");
+  return pdTRUE;
+}
+static portBASE_TYPE task_ipc_testA_msg(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg)
+{
+  printf("testA event %i |", id);
+
+  *id = ACKNOWLEDGE;
+  return pdFALSE;
+}
+
+
+
+static portBASE_TYPE task_ipc_testB_timeout(struct ipc_io *io);
+static portBASE_TYPE task_ipc_testB_msg(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg);
 
 void task_ipc_testB(void *p)
 {
   struct ipc_addr me;
-  
-  if(0 != ipc_addr_lookup(ipc_mod_display, &me))
-  {
-    printf("testB ERROR0 |");
-    return;
-  }
-
-  /* register this address to current task */
-  if(0 != ipc_register(&me))
-  {
-    printf("testB ERROR1 |");
-    return;
-  }
+  struct ipc_io io;
+  int error;
 
   while(1)
   {
-    struct ipc_msg msg;
-    if(ipc_get(&me, &msg, 1000/portTICK_RATE_MS) == pdFALSE)
+    if(pdFALSE == ipc_addr_lookup(ipc_mod_testB, &me))
     {
-      printf("0 ");
+      error = 0;
+      break;
     }
-    else
+
+    /* register this address to current task */
+    if(pdFALSE == ipc_register(&io, task_ipc_testB_timeout, task_ipc_testB_msg, &me))
     {
-      printf("1 ");
+      error = 1;
+      break;
+    }
+
+    if(pdFALSE == ipc_loop(&io, 10000/portTICK_RATE_MS))
+    {
+      error = 2;
+      break;
     }
   }
 
+  /* if we are here then there is an error! */
+
+  while(1)
+  {
+    printf("testB ERROR %i! |", error);
+    vTaskDelay(2000 / portTICK_RATE_MS);
+  }
+
+  /* ask the kernel to kill me */
+  //  vTaskDelete(NULL);
 }
+
+static portBASE_TYPE task_ipc_testB_timeout(struct ipc_io *io)
+{
+  printf("testB work|");
+  return pdTRUE;
+}
+static portBASE_TYPE task_ipc_testB_msg(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg)
+{
+  printf("testB event %i |", id);
+
+  *id = ACKNOWLEDGE;
+  return pdFALSE;
+}
+

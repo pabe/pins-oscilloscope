@@ -9,6 +9,7 @@
 
 enum ipc_msg_id
 {
+  ACKNOWLEDGE,
 	SUBSCRIBE,
 	UNSUBSCRIBE,
 	SET_SAMPLERATE,
@@ -17,10 +18,9 @@ enum ipc_msg_id
 
 struct ipc_msg_head
 {
-	enum ipc_msg_id Id;
-//  enum ipc_modules src;
-//  unsigned reply:1;
-//  unsigned datagram:1;
+  enum ipc_msg_id Id;
+  struct ipc_addr src;
+  unsigned reply:1;
 };
 
 #define DEFINE_MSG(NAME, ARGS) \
@@ -29,10 +29,15 @@ struct ipc_msg_ ## NAME \
 	ARGS \
 } NAME;
 
-struct ipc_msg
+struct ipc_fullmsg
 {
   struct ipc_msg_head head;
-  union {
+  union ipc_msg
+  {
+    DEFINE_MSG(acknowledge,
+        char dummy;
+    )
+
 	DEFINE_MSG(subscribe,
 		int channel;
 		enum ipc_modules Destination;

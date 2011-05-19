@@ -17,7 +17,8 @@
 /*-----------------------------------------------------------*/
 
 #include "ipc.h"
-#include "task_ipc.h"
+#include "task_ipc_testa.h"
+#include "task_ipc_testb.h"
 #include "task_input_gpio.h"
 #include "task_led.h"
 #define WIDTH 320

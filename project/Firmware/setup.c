@@ -7,6 +7,7 @@
 #include <stm32f10x.h>
 #include <system_stm32f10x_cl.h>
 
+#include "task_watchdog.h"
 /*
  * Configure the clocks, GPIO and other peripherals.
  */
@@ -89,4 +90,5 @@ void LED_out (u32 val) {
 /* Function to execute if an assertion failed */
 void assert_failed(u8* file, u32 line) {
   printf("ASSERTION FAILURE: %s:%d\n", file, line);
+  task_watchdog_signal_error();
 }

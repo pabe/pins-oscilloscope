@@ -17,7 +17,10 @@
 /*-----------------------------------------------------------*/
 
 #include "ipc.h"
-
+#include "task_ipc_testa.h"
+#include "task_ipc_testb.h"
+#include "task_input_gpio.h"
+#include "task_watchdog.h"
 #define WIDTH 320
 
 xSemaphoreHandle lcdLock;
@@ -87,23 +90,6 @@ int fputc(int ch, FILE *f) {
   unsigned char c = ch;
   xQueueSend(printQueue, &c, 0);
   return ch;
-}
-
-/*-----------------------------------------------------------*/
-
-/**
- * Blink the LEDs to show that we are alive
- */
-
-static void ledTask(void *params) {
-  const u8 led_val[8] = { 0x01,0x03,0x07,0x0F,0x0E,0x0C,0x08,0x00 };
-  int cnt = 0;
-
-  for (;;) {
-    LED_out (led_val[cnt]);
-    cnt = (cnt + 1) % sizeof(led_val);
-    vTaskDelay(100 / portTICK_RATE_MS);
-  }
 }
 
 /*-----------------------------------------------------------*/
@@ -224,16 +210,22 @@ int main( void )
 
   printQueue = xQueueCreate(128, 1);
 
-  ipc_init();
+  if(0 != ipc_init())
+  {
+    /* TODO: handle failure */
+  }
 
   initDisplay();
   setupButtons();
 
   xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL);
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL);
-  xTaskCreate(ledTask, "led", 100, NULL, 1, NULL);
   xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL);
   xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL);
+  xTaskCreate(task_watchdog, "Watchdog driver", 100, NULL, 1, NULL);
+  xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL);
+  xTaskCreate(task_ipc_testA, "IPC test taskA", 100, NULL, 1, NULL);
+  xTaskCreate(task_ipc_testB, "IPC test taskB", 200, NULL, 1, NULL);
 
   printf("Setup complete ");  // this is redirected to the display
 

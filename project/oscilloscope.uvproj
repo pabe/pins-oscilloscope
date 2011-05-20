@@ -47,7 +47,7 @@
           <OutputName>oscilloscope</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>0</CreateHexFile>
+          <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\</ListingPath>
@@ -331,7 +331,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>2</Optim>
+            <Optim>1</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>0</OneElfS>
@@ -475,6 +475,26 @@
               <FileName>measure.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\measure.h</FilePath>
+            </File>
+            <File>
+              <FileName>task_input_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_input_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_ipc_testa.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_ipc_testa.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_ipc_testb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_ipc_testb.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_watchdog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_watchdog.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -979,6 +999,26 @@
               <FileName>measure.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\measure.h</FilePath>
+            </File>
+            <File>
+              <FileName>task_input_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_input_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_ipc_testa.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_ipc_testa.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_ipc_testb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_ipc_testb.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_watchdog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_watchdog.c</FilePath>
             </File>
           </Files>
         </Group>

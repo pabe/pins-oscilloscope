@@ -14,6 +14,7 @@ typedef portBASE_TYPE (ipc_cb_msg_t)(ipc_io_t *io, ipc_msg_id_t *id, ipc_msg_t *
 typedef enum ipc_modules
 {
 	ipc_mod_display,
+  ipc_mod_watchdog,
   ipc_mod_testA,
   ipc_mod_testB,
 	ipc_mod_input,

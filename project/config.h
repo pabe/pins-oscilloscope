@@ -2,6 +2,7 @@
 #define __CONFIG_H_
 
 #define IPC_QUEUE_LEN_DISPLAY   2
+#define IPC_QUEUE_LEN_WATCHDOG  1
 #define IPC_QUEUE_LEN_INPUT     2
 #define IPC_QUEUE_LEN_MEASURING 2
 

@@ -482,11 +482,6 @@
               <FilePath>.\task_input_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>task_led.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_led.c</FilePath>
-            </File>
-            <File>
               <FileName>task_ipc_testa.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_ipc_testa.c</FilePath>
@@ -495,6 +490,11 @@
               <FileName>task_ipc_testb.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_ipc_testb.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_watchdog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_watchdog.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1006,11 +1006,6 @@
               <FilePath>.\task_input_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>task_led.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_led.c</FilePath>
-            </File>
-            <File>
               <FileName>task_ipc_testa.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_ipc_testa.c</FilePath>
@@ -1019,6 +1014,11 @@
               <FileName>task_ipc_testb.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_ipc_testb.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_watchdog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_watchdog.c</FilePath>
             </File>
           </Files>
         </Group>

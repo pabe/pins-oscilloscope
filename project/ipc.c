@@ -25,6 +25,8 @@ portBASE_TYPE ipc_init(void)
 
   ipc_queue[ipc_mod_display] =
     xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(ipc_fullmsg_t));
+  ipc_queue[ipc_mod_watchdog] =
+    xQueueCreate(IPC_QUEUE_LEN_WATCHDOG, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_testA] =
     xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_testB] =
@@ -80,15 +82,20 @@ portBASE_TYPE ipc_register(
     ipc_cb_msg_t *cb_msg,
     const ipc_addr_t *addr)
 {
+  xQueueHandle q;
   assert(io);
   assert(cb_timeout);
   assert(cb_msg);
   assert(addr);
 
+  q = ipc_addr_resolve(addr);
+  if(!q)
+    return pdFALSE;;
+  
   /* TODO: add support to see if an other task owns this one */
   memset(io, 0, sizeof(ipc_io_t));
 
-  io->qh         = ipc_addr_resolve(addr);
+  io->qh         = q;
   io->cb_timeout = cb_timeout;
   io->cb_msg     = cb_msg;
   io->me         = *addr;

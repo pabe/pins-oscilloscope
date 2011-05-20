@@ -1,11 +1,13 @@
 
 #include <stdio.h>
 
+/* FreeRTOS */
 #include "FreeRTOS.h"
 #include "task.h"
 
 #include "ipc.h"
 #include "task_ipc_testA.h"
+#include "task_watchdog.h"
 
 /* private functions */
 static portBASE_TYPE task_ipc_testA_timeout(struct ipc_io *io);
@@ -21,6 +23,7 @@ void task_ipc_testA(void *p)
   {
     if(pdFALSE == ipc_addr_lookup(ipc_mod_testA, &me))
     {
+
       error = 0;
       break;
     }
@@ -40,6 +43,7 @@ void task_ipc_testA(void *p)
   }
 
   /* if we are here then there is an error! */
+  task_watchdog_signal_error();
 
   while(1)
   {

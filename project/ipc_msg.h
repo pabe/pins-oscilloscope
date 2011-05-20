@@ -10,10 +10,11 @@
 enum ipc_msg_id
 {
   ACKNOWLEDGE,
-	SUBSCRIBE,
-	UNSUBSCRIBE,
-	SET_SAMPLERATE,
-	DATA,
+  SUBSCRIBE,
+  UNSUBSCRIBE,
+  SET_SAMPLERATE,
+  DATA,
+  WATCHDOG_CMD
 };
 
 struct ipc_msg_head
@@ -26,37 +27,41 @@ struct ipc_msg_head
 #define DEFINE_MSG(NAME, ARGS) \
 struct ipc_msg_ ## NAME \
 { \
-	ARGS \
-} NAME;
+  ARGS \
+} NAME
 
 struct ipc_fullmsg
 {
   struct ipc_msg_head head;
   union ipc_msg
   {
+    DEFINE_MSG(watchdog_cmd,
+        uint8_t cmd;
+        );
+
     DEFINE_MSG(acknowledge,
         char dummy;
-    )
+        );
 
-	DEFINE_MSG(subscribe,
-		int channel;
-		enum ipc_modules Destination;
-	)
+    DEFINE_MSG(subscribe,
+        int channel;
+        enum ipc_modules Destination;
+        );
 
-	DEFINE_MSG(unsubscribe,
-		int channel;
-		enum ipc_modules Destination;
-	)
+    DEFINE_MSG(unsubscribe,
+        int channel;
+        enum ipc_modules Destination;
+        );
 
-	DEFINE_MSG(set_samplerate,
-		int channel;
-		int rate;
-	)
+    DEFINE_MSG(set_samplerate,
+        int channel;
+        int rate;
+        );
 
-	DEFINE_MSG(data,
-		int channel;
-		int value;
-	)
+    DEFINE_MSG(data,
+        int channel;
+        int value;
+        );
   } payload;
 };
 

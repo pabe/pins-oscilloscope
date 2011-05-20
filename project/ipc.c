@@ -17,6 +17,12 @@ xQueueHandle ipc_queue[ipc_mod_LAST+1];
 
 static xQueueHandle ipc_addr_resolve(const ipc_addr_t* addr);
 
+portBASE_TYPE ipc_msg_def(ipc_io_t *io, ipc_msg_id_t *id, ipc_msg_t *msg)
+{
+  *id = ACKNOWLEDGE;
+  return pdTRUE;
+}
+
 portBASE_TYPE ipc_init(void)
 {
   int i;
@@ -25,6 +31,8 @@ portBASE_TYPE ipc_init(void)
     xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_watchdog] =
     xQueueCreate(IPC_QUEUE_LEN_WATCHDOG, sizeof(ipc_fullmsg_t));
+  ipc_queue[ipc_mod_input_gpio] =
+    xQueueCreate(IPC_QUEUE_LEN_INPUT_GPIO, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_testA] =
     xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_testB] =
@@ -204,11 +212,14 @@ portBASE_TYPE ipc_loop(
     {
       return pdFALSE;
     }
-
-    msg.head.reply = 1;
-    if(pdFALSE == ipc_put(io, &msg, NULL, &msg_src))
+    
+    if(io->recv_msg)
     {
-      return pdFALSE;
+      msg.head.reply = 1;
+      if(pdFALSE == ipc_put(io, &msg, NULL, &msg_src))
+      {
+        return pdFALSE;
+      }
     }
   }
 }

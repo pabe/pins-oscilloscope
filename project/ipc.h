@@ -36,21 +36,16 @@ struct ipc_io
   xQueueHandle     qh;
   ipc_addr_t       me;
   ipc_fullmsg_t    *recv_msg;
-  struct
-  {
-    unsigned waiting_for_result:1; //recv_msg == NULL equals this =0
-  } flags;
 };
 
 /* ipc.h should be the only one included from other subsystems */
 #include "ipc_msg.h"
 
+/******************************************************************************/
 
-//extern xQueueHandle ipc_queue[ipc_mod_LAST+1];
-
-
-/* functions return 0 on success, !0 on error if not other stated */
-int ipc_init(void);
+/* if ipc_init() failas some queues may have been inited so a call to
+ * ipc_finalizer() shoudl always be done */
+portBASE_TYPE ipc_init(void);
 void ipc_finalizer(void);
 
 portBASE_TYPE ipc_addr_lookup(

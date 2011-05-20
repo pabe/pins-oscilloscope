@@ -16,7 +16,7 @@ xQueueHandle ipc_queue[ipc_mod_LAST+1];
 
 static xQueueHandle ipc_addr_resolve(const ipc_addr_t* addr);
 
-int ipc_init(void)
+portBASE_TYPE ipc_init(void)
 {
   int i;
 
@@ -36,11 +36,10 @@ int ipc_init(void)
   {
     if(!ipc_queue[i])
     {
-      ipc_finalizer();
-      return !0;
+      return pdFALSE;
     }
   }
-  return 0;
+  return pdTRUE;
 }
 
 void ipc_finalizer(void)
@@ -90,7 +89,6 @@ portBASE_TYPE ipc_register(
   io->cb_timeout = cb_timeout;
   io->cb_msg     = cb_msg;
   io->me         = *addr;
-  //memcpy(io->me, addr, sizeof(struct ipc_addr));
   return pdTRUE;
 }
 
@@ -126,15 +124,17 @@ portBASE_TYPE ipc_put2(
     return pdFALSE;
   }
 
-  /* now have we sent our control msg, setup the recv buffer and call loop*/
-  io->flags.waiting_for_result = 1;
+  /* connect a buffer to store respone
+   * this also indicate to ipc_loop() that we are expecting a response
+   */
   io->recv_msg = response;
 
-  /* TODO: read timeout from io struct */
+  /* requests block forever,
+   * ie. if no one is answering tough luck
+   */
   ret = ipc_loop(io, portMAX_DELAY);
 
   /* clear the control struct */
-  io->flags.waiting_for_result = 0;
   io->recv_msg = NULL;
   return ret;
 }
@@ -149,30 +149,34 @@ portBASE_TYPE ipc_loop(
     ipc_fullmsg_t msg;
     ipc_addr_t msg_src;
 
-    /* TODO: for now wait forever */
     ret = xQueueReceive(io->qh, &msg, xTicksToWait);
 
     /* timeout? */
     if(ret == pdFALSE)
     {
-      if(!io->flags.waiting_for_result)
+      /* are we expecting a reply? */
+      if(!io->recv_msg)
       {
-        /* if there was a timeout and we not already in worker() */
-        /* TODO: check return */
+        /* we where not expecting a reply alas we are not executing
+         * the timeout routine
+         */
         if(pdFALSE == io->cb_timeout(io))
         {
           return pdFALSE;
         }
       }
 
+      /* TODO: Reset timeout */
       continue;
     }
+    
+    /* TODO: Recalculate timeout */
 
-    /* check if this is a reply */
+    /* is this a reply? */
     if(msg.head.reply)
     {
       /* are we expecting a reply? */
-      if(io->recv_msg)
+      if(!io->recv_msg)
       {
         return pdFALSE;
       }

@@ -1,5 +1,6 @@
-#ifndef __MEASURE_H_
-#define __MEASURE_H_
+#ifndef __MAIN_H_
+#define __MAIN_H_
+
 #define NUMBER_OF_CHANNELS 2  //Number of probes on the oscilloscope
 
 typedef struct {
@@ -12,4 +13,9 @@ typedef struct {
 
 OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
 
-#endif /* __MEASURE_H_ */
+int setSampleRate(int rate, int channel);
+int getSampleRate(int channel);
+int setSubscribe(int subscribe, int channel);
+int getSubscribe(int channel);
+
+#endif /* __MAIN_H_ */

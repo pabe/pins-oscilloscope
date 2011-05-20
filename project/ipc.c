@@ -2,18 +2,16 @@
 
 #include <string.h>
 
-#include "config.h"
-#include "ipc.h"
-#include "ipc_msg.h"
-
+/* Firmware */
 #include "setup.h"
 #include "assert.h"
 
+/* FreeRTOS */
 #include "FreeRTOS.h"
 #include "task.h"
 
-//#warning removing asserts...
-//#define assert(x)
+#include "config.h"
+#include "ipc.h"
 
 xQueueHandle ipc_queue[ipc_mod_LAST+1];
 

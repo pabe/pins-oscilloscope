@@ -62,13 +62,16 @@ static portBASE_TYPE task_ipc_testA_timeout(struct ipc_io *io)
     return pdFALSE;
   m.head.Id = ACKNOWLEDGE;
 
-  ipc_put2(io, &dest, &m, &m2);
+  if(pdFALSE == ipc_put(io, &m, &m2, &dest))
+    return pdFALSE;
+//  printf("testA resp %i |", m2.head.Id);
+
   return pdTRUE;
 }
 
 static portBASE_TYPE task_ipc_testA_msg(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg)
 {
-  printf("testA event %i |", id);
+//  printf("testA event %i |", id);
 
   *id = ACKNOWLEDGE;
   return pdFALSE;

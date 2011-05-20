@@ -98,39 +98,37 @@ portBASE_TYPE ipc_register(
 portBASE_TYPE ipc_put(
     ipc_io_t *io,
     ipc_fullmsg_t *msg,
+    ipc_fullmsg_t *reply,
     const ipc_addr_t *dest)
 {
-  assert(dest);
-  assert(msg);
-
-  msg->head.src = *dest;
-  return xQueueSendToBack(ipc_addr_resolve(dest), msg, 0);
-}
-
-portBASE_TYPE ipc_put2(
-    ipc_io_t *io,
-    const ipc_addr_t *dest,
-    ipc_fullmsg_t *msg,
-    ipc_fullmsg_t *response)
-{
   portBASE_TYPE ret;
+  xQueueHandle q;
   assert(io);
   assert(dest);
   assert(msg);
-  assert(response);
 
-  
-  /* TODO: use put().... */
-  msg->head.src = io->me;
-  if(pdFALSE == xQueueSendToBack(ipc_addr_resolve(dest), msg, portMAX_DELAY))
+  q = ipc_addr_resolve(dest);
+  if(!q)
   {
     return pdFALSE;
+  }
+  
+  msg->head.src = io->me;
+  if(pdFALSE == xQueueSendToBack(q, msg, portMAX_DELAY))
+  {
+    return pdFALSE;
+  }
+
+  /* no reply means fire and forget */
+  if(!reply)
+  {
+    return pdTRUE;
   }
 
   /* connect a buffer to store respone
    * this also indicate to ipc_loop() that we are expecting a response
    */
-  io->recv_msg = response;
+  io->recv_msg = reply;
 
   /* requests block forever,
    * ie. if no one is answering tough luck
@@ -203,7 +201,7 @@ portBASE_TYPE ipc_loop(
     }
 
     msg.head.reply = 1;
-    if(pdFALSE == ipc_put(io, &msg, &msg_src))
+    if(pdFALSE == ipc_put(io, &msg, NULL, &msg_src))
     {
       return pdFALSE;
     }

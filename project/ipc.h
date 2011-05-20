@@ -58,20 +58,13 @@ portBASE_TYPE ipc_register(
     ipc_cb_msg_t *cb_msg,
     const ipc_addr_t *addr);
 
-/* fire and forget */
 /* will update the header part of msg */
+/* reply == NULL means fire and forget */
 portBASE_TYPE ipc_put(
     ipc_io_t *io,
     ipc_fullmsg_t *msg,
+    ipc_fullmsg_t *reply,
     const ipc_addr_t *dest);
-
-/* fire and block */
-/* will update the header part of msg */
-portBASE_TYPE ipc_put2(
-    ipc_io_t *io,
-    const ipc_addr_t *dest,
-    ipc_fullmsg_t *msg,
-    ipc_fullmsg_t *response);
 
 
 portBASE_TYPE ipc_loop(

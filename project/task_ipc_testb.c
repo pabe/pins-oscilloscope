@@ -59,9 +59,9 @@ static portBASE_TYPE task_ipc_testB_timeout(struct ipc_io *io)
 
 static portBASE_TYPE task_ipc_testB_msg(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg)
 {
-  printf("testB event %i |", *id);
+//  printf("testB event %i |", *id);
 
-  *id = ACKNOWLEDGE;
+  *id = SUBSCRIBE;
   return pdTRUE;
 }
 

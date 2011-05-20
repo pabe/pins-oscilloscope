@@ -4,7 +4,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "setup.h"
-//#include "assert.h"
+#include "assert.h"
 #include "measure.h"
 #include "queue.h"
 #include "stm3210c_eval_ioe.h"

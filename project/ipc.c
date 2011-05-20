@@ -9,6 +9,9 @@
 #include "setup.h"
 #include "assert.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 //#warning removing asserts...
 //#define assert(x)
 
@@ -143,13 +146,17 @@ portBASE_TYPE ipc_loop(
     ipc_io_t *io,
     portTickType xTicksToWait)
 {
+  portTickType timeout = xTicksToWait;
+
   while(1)
   {
+    portTickType sleep_time;
     portBASE_TYPE ret;
     ipc_fullmsg_t msg;
     ipc_addr_t msg_src;
 
-    ret = xQueueReceive(io->qh, &msg, xTicksToWait);
+    sleep_time = xTaskGetTickCount();
+    ret = xQueueReceive(io->qh, &msg, timeout);
 
     /* timeout? */
     if(ret == pdFALSE)
@@ -166,11 +173,12 @@ portBASE_TYPE ipc_loop(
         }
       }
 
-      /* TODO: Reset timeout */
+      timeout = xTicksToWait;
       continue;
     }
     
     /* TODO: Recalculate timeout */
+    timeout = timeout - (xTaskGetTickCount() - sleep_time);
 
     /* is this a reply? */
     if(msg.head.reply)

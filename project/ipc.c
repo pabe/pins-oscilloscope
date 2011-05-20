@@ -159,7 +159,10 @@ portBASE_TYPE ipc_loop(
       {
         /* if there was a timeout and we not already in worker() */
         /* TODO: check return */
-        io->cb_timeout(io);
+        if(pdFALSE == io->cb_timeout(io))
+        {
+          return pdFALSE;
+        }
       }
 
       continue;

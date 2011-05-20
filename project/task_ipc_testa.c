@@ -53,7 +53,16 @@ void task_ipc_testA(void *p)
 
 static portBASE_TYPE task_ipc_testA_timeout(struct ipc_io *io)
 {
+  struct ipc_fullmsg m;
+  struct ipc_fullmsg m2;
+  struct ipc_addr dest;
   printf("testA work|");
+  
+  if(pdFALSE == ipc_addr_lookup(ipc_mod_testB, &dest))
+    return pdFALSE;
+  m.head.Id = ACKNOWLEDGE;
+
+  ipc_put2(io, &dest, &m, &m2);
   return pdTRUE;
 }
 

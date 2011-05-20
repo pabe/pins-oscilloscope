@@ -8,10 +8,10 @@
 
 #include "ipc_forwards.h"
 
-typedef portBASE_TYPE (ipc_cb_timeout_t)(struct ipc_io *io);
-typedef portBASE_TYPE (ipc_cb_msg_t)(struct ipc_io *io, enum ipc_msg_id *id, union ipc_msg *msg);
+typedef portBASE_TYPE (ipc_cb_timeout_t)(ipc_io_t *io);
+typedef portBASE_TYPE (ipc_cb_msg_t)(ipc_io_t *io, ipc_msg_id_t *id, ipc_msg_t *msg);
 
-enum ipc_modules
+typedef enum ipc_modules
 {
 	ipc_mod_display,
   ipc_mod_testA,
@@ -22,20 +22,20 @@ enum ipc_modules
 	/* remember to update if head or tail is changed! */
 	ipc_mod_FIRST = ipc_mod_display,
 	ipc_mod_LAST  = ipc_mod_measuring
-};
+} ipc_modules_t;
 
 struct ipc_addr
 {
-  enum ipc_modules mod;
+  ipc_modules_t mod;
 };
 
 struct ipc_io
 {
   ipc_cb_timeout_t *cb_timeout;
   ipc_cb_msg_t     *cb_msg;
-  xQueueHandle qh;
-  struct ipc_addr me;
-  struct ipc_fullmsg *recv_msg;
+  xQueueHandle     qh;
+  ipc_addr_t       me;
+  ipc_fullmsg_t    *recv_msg;
   struct
   {
     unsigned waiting_for_result:1; //recv_msg == NULL equals this =0
@@ -44,6 +44,8 @@ struct ipc_io
 
 /* ipc.h should be the only one included from other subsystems */
 #include "ipc_msg.h"
+
+
 //extern xQueueHandle ipc_queue[ipc_mod_LAST+1];
 
 
@@ -52,32 +54,33 @@ int ipc_init(void);
 void ipc_finalizer(void);
 
 portBASE_TYPE ipc_addr_lookup(
-    enum ipc_modules mod,
-    struct ipc_addr *addr);
+    ipc_modules_t mod,
+    ipc_addr_t *addr);
+
 portBASE_TYPE ipc_register(
-    struct ipc_io *io,
+    ipc_io_t *io,
     ipc_cb_timeout_t *cb_timeout,
     ipc_cb_msg_t *cb_msg,
-    const struct ipc_addr *addr);
+    const ipc_addr_t *addr);
 
 /* fire and forget */
 /* will update the header part of msg */
 portBASE_TYPE ipc_put(
-    struct ipc_io *io,
-    struct ipc_fullmsg *msg,
-    const struct ipc_addr *dest);
+    ipc_io_t *io,
+    ipc_fullmsg_t *msg,
+    const ipc_addr_t *dest);
 
 /* fire and block */
 /* will update the header part of msg */
 portBASE_TYPE ipc_put2(
-    struct ipc_io *io,
-    const struct ipc_addr *dest,
-    struct ipc_fullmsg *msg,
-    struct ipc_fullmsg *response);
+    ipc_io_t *io,
+    const ipc_addr_t *dest,
+    ipc_fullmsg_t *msg,
+    ipc_fullmsg_t *response);
 
 
 portBASE_TYPE ipc_loop(
-    struct ipc_io *io,
+    ipc_io_t *io,
     portTickType xTicksToWait);
 
 #endif /* __IPC_H_ */

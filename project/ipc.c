@@ -14,22 +14,22 @@
 
 xQueueHandle ipc_queue[ipc_mod_LAST+1];
 
-static xQueueHandle ipc_addr_resolve(const struct ipc_addr* addr);
+static xQueueHandle ipc_addr_resolve(const ipc_addr_t* addr);
 
 int ipc_init(void)
 {
   int i;
 
   ipc_queue[ipc_mod_display] =
-    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(struct ipc_fullmsg));
+    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_testA] =
-    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(struct ipc_fullmsg));
+    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_testB] =
-    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(struct ipc_fullmsg));
+    xQueueCreate(IPC_QUEUE_LEN_DISPLAY, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_input] =
-    xQueueCreate(IPC_QUEUE_LEN_INPUT, sizeof(struct ipc_fullmsg));
+    xQueueCreate(IPC_QUEUE_LEN_INPUT, sizeof(ipc_fullmsg_t));
   ipc_queue[ipc_mod_measuring] =
-    xQueueCreate(IPC_QUEUE_LEN_MEASURING, sizeof(struct ipc_fullmsg));
+    xQueueCreate(IPC_QUEUE_LEN_MEASURING, sizeof(ipc_fullmsg_t));
 
   /* check if any of the queues fail to init */
   for(i=0; i < sizeof(ipc_queue)/sizeof(xQueueHandle); i++)
@@ -55,7 +55,7 @@ void ipc_finalizer(void)
   }
 }
 
-static xQueueHandle ipc_addr_resolve(const struct ipc_addr* addr)
+static xQueueHandle ipc_addr_resolve(const ipc_addr_t* addr)
 {
   assert(addr);
 
@@ -63,8 +63,8 @@ static xQueueHandle ipc_addr_resolve(const struct ipc_addr* addr)
 }
 
 portBASE_TYPE ipc_addr_lookup(
-    enum ipc_modules mod,
-    struct ipc_addr* addr)
+    ipc_modules_t mod,
+    ipc_addr_t* addr)
 {
   assert(addr);
 
@@ -73,10 +73,10 @@ portBASE_TYPE ipc_addr_lookup(
 }
 
 portBASE_TYPE ipc_register(
-    struct ipc_io *io,
+    ipc_io_t *io,
     ipc_cb_timeout_t *cb_timeout,
     ipc_cb_msg_t *cb_msg,
-    const struct ipc_addr *addr)
+    const ipc_addr_t *addr)
 {
   assert(io);
   assert(cb_timeout);
@@ -84,7 +84,7 @@ portBASE_TYPE ipc_register(
   assert(addr);
 
   /* TODO: add support to see if an other task owns this one */
-  memset(io, 0, sizeof(struct ipc_io));
+  memset(io, 0, sizeof(ipc_io_t));
 
   io->qh         = ipc_addr_resolve(addr);
   io->cb_timeout = cb_timeout;
@@ -95,9 +95,9 @@ portBASE_TYPE ipc_register(
 }
 
 portBASE_TYPE ipc_put(
-    struct ipc_io *io,
-    struct ipc_fullmsg *msg,
-    const struct ipc_addr *dest)
+    ipc_io_t *io,
+    ipc_fullmsg_t *msg,
+    const ipc_addr_t *dest)
 {
   assert(dest);
   assert(msg);
@@ -107,10 +107,10 @@ portBASE_TYPE ipc_put(
 }
 
 portBASE_TYPE ipc_put2(
-    struct ipc_io *io,
-    const struct ipc_addr *dest,
-    struct ipc_fullmsg *msg,
-    struct ipc_fullmsg *response)
+    ipc_io_t *io,
+    const ipc_addr_t *dest,
+    ipc_fullmsg_t *msg,
+    ipc_fullmsg_t *response)
 {
   portBASE_TYPE ret;
   assert(io);
@@ -140,14 +140,14 @@ portBASE_TYPE ipc_put2(
 }
 
 portBASE_TYPE ipc_loop(
-    struct ipc_io *io,
+    ipc_io_t *io,
     portTickType xTicksToWait)
 {
   while(1)
   {
     portBASE_TYPE ret;
-    struct ipc_fullmsg msg;
-    struct ipc_addr msg_src;
+    ipc_fullmsg_t msg;
+    ipc_addr_t msg_src;
 
     /* TODO: for now wait forever */
     ret = xQueueReceive(io->qh, &msg, xTicksToWait);

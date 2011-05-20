@@ -14,4 +14,11 @@ struct ipc_addr;
 union ipc_msg;
 enum ipc_msg_id;
 
+typedef struct ipc_fullmsg ipc_fullmsg_t;
+typedef struct ipc_io ipc_io_t;
+typedef struct ipc_addr ipc_addr_t;
+typedef union ipc_msg ipc_msg_t;
+typedef enum ipc_msg_id ipc_msg_id_t;
+
+
 #endif /* __IPC_FORWARDS_H */

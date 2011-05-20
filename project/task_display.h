@@ -4,6 +4,8 @@
 #define DISPLAY_X_RES 320
 #define DISPLAY_Y_RES 240
 
+#define DISPLAY_MENU_HEIGHT 40
+
 #define MODE_OSCILLOSCOPE (1<<0)
 #define MODE_MULTIMETER (1<<1)
 

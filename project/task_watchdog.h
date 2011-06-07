@@ -5,13 +5,10 @@
  * (For now a pure SW that toogles a LED.)
  */
 
-#ifndef __TASK_WATCHDOG_H_
-#define __TASK_WATCHDOG_H_
-
-#define TASK_WATCHDOG_CMD_AUX_LED_LIT    0
-#define TASK_WATCHDOG_CMD_AUX_LED_QUENCH 1
+#ifndef __TASK_WATCHDOG__H_
+#define __TASK_WATCHDOG__H_
 
 void task_watchdog_signal_error(void);
 void task_watchdog(void *p);
 
-#endif /* __TASK_WATCHDOG_H_ */
+#endif /* __TASK_WATCHDOG__H_ */

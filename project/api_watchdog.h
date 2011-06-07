@@ -1,15 +1,16 @@
-/**
+/*
  * api_watchdog:
  *
- * TASK responsible for status leds and HW-watchdog reset circuts.
- * (For now a pure SW that toogles a LED.)
+ * API to interface the watchdog over IPC.
  */
 
-#ifndef __API_WATCHDOG_H_
-#define __API_WATCHDOG_H_
+#ifndef __API_WATCHDOG__H_
+#define __API_WATCHDOG__H_
 
+#include "FreeRTOS.h"
 #include "queue.h"
 
+#include "assert.h"
 #include "config.h"
 
 typedef enum
@@ -25,6 +26,16 @@ typedef struct
 
 extern xQueueHandle ipc_watchdog;
 
-portBASE_TYPE ipc_watchdog_init(void);
+__inline portBASE_TYPE ipc_watchdog_init(void);
 
-#endif /* __API_WATCHDOG_H_ */
+__inline portBASE_TYPE ipc_watchdog_init(void)
+{
+  /* we do not init twice! */
+  if(ipc_watchdog)
+    return pdFALSE;
+
+  ipc_watchdog = xQueueCreate(IPC_QUEUE_LEN_WATCHDOG, sizeof(msg_watchdog_t));
+
+  return ipc_watchdog ? pdTRUE : pdFALSE;
+}
+#endif /* __API_WATCHDOG__H_ */

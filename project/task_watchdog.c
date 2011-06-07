@@ -35,17 +35,8 @@ static int lit_led_aux = 0;
 static int lit_led_watchdog = 0;
 
 /* public variables */
-xQueueHandle ipc_watchdog;
 
 /* public functions */
-portBASE_TYPE ipc_watchdog_init(void)
-{
-  assert(!ipc_watchdog);
-
-  ipc_watchdog = xQueueCreate(IPC_QUEUE_LEN_WATCHDOG, sizeof(msg_watchdog_t));
-
-  return ipc_watchdog ? pdTRUE : pdFALSE;
-}
 
 void task_watchdog_signal_error(void)
 {

@@ -16,11 +16,9 @@
 
 /*-----------------------------------------------------------*/
 
-#include "ipc.h"
-#include "task_ipc_testa.h"
-#include "task_ipc_testb.h"
 #include "task_input_gpio.h"
 #include "task_watchdog.h"
+#include "api_watchdog.h"
 #include "measure.h"
 #define WIDTH 320
 
@@ -211,14 +209,12 @@ int main( void )
 
   printQueue = xQueueCreate(128, 1);
 
-  if(0 != ipc_init())
+  initDisplay();
+  setupButtons();
+  if(pdFALSE == ipc_watchdog_init())
   {
     /* TODO: handle failure */
   }
-
-  initDisplay();
-  setupButtons();
-  measureInit();
 
   xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL);
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL);
@@ -226,8 +222,6 @@ int main( void )
   xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL);
   xTaskCreate(task_watchdog, "Watchdog driver", 100, NULL, 1, NULL);
   xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL);
-  xTaskCreate(task_ipc_testA, "IPC test taskA", 100, NULL, 1, NULL);
-  xTaskCreate(task_ipc_testB, "IPC test taskB", 200, NULL, 1, NULL);
 
   printf("Setup complete ");  // this is redirected to the display
 

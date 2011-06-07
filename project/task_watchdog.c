@@ -13,10 +13,11 @@
 /* FreeRTOS */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "assert.h"
 
 #include "config.h"
-#include "ipc.h"
 #include "task_watchdog.h"
+#include "api_watchdog.h"
 
 
 #define LED_4 0x08
@@ -27,13 +28,24 @@
 #define LED_ORANGE LED_2
 
 /* private functions */
-static portBASE_TYPE init(ipc_io_t *io);
-static portBASE_TYPE timeout(ipc_io_t *io);
-static portBASE_TYPE msg(ipc_io_t *io, ipc_msg_id_t *id, ipc_msg_t *msg);
 
 /* private variables */
 static int we_got_error = 0;
-static int lit_aux_led = 0;
+static int lit_led_aux = 0;
+static int lit_led_watchdog = 0;
+
+/* public variables */
+xQueueHandle ipc_watchdog;
+
+/* public functions */
+portBASE_TYPE ipc_watchdog_init(void)
+{
+  assert(!ipc_watchdog);
+
+  ipc_watchdog = xQueueCreate(IPC_QUEUE_LEN_WATCHDOG, sizeof(msg_watchdog_t));
+
+  return ipc_watchdog ? pdTRUE : pdFALSE;
+}
 
 void task_watchdog_signal_error(void)
 {
@@ -42,95 +54,45 @@ void task_watchdog_signal_error(void)
 
 void task_watchdog(void *p)
 {
-  ipc_io_t io;
-
-  if(pdTRUE == init(&io) &&
-    (pdTRUE == ipc_loop(&io, CFG_TASK_WATCHDOG__POLLING_PERIOD)))
+  portTickType timeout = CFG_TASK_WATCHDOG__POLLING_PERIOD;
+  while(1)
   {
-    /* well frankly, this should never happen...
-     * ipc_loop() only returns when handling requests.
-     */
-  }
+    portTickType sleep_time;
+    msg_watchdog_t msg;
 
-  /* 
-   * So if we are here (init failed or loop() returned) something is bad
-   * and yes, if we (watchdog) fail nooooooone will care :(
-   */
-  task_watchdog_signal_error();
+    sleep_time = xTaskGetTickCount();
+    
+    assert(ipc_watchdog);
+    if(pdFALSE == xQueueReceive(ipc_watchdog, &msg, timeout))
+    {
+      u32 led;
+      timeout = CFG_TASK_WATCHDOG__POLLING_PERIOD;
 
-  /* ask the kernel to kill me */
-  vTaskDelete(NULL);
-}
+      led  = lit_led_watchdog ? LED_BLUE   : 0;
+      led |= we_got_error     ? LED_RED    : 0;
+      led |= lit_led_aux      ? LED_ORANGE : 0;
 
-static portBASE_TYPE init(ipc_io_t *io)
-{
-  ipc_addr_t me;
-
-  if(pdFALSE == ipc_addr_lookup(ipc_mod_watchdog, &me))
-  {
-    return pdFALSE;
-  }
-
-  /* register this address to current task */
-  if(pdFALSE == ipc_register(io, timeout, msg, &me))
-  {
-    return pdFALSE;
-  }
-
-  return pdTRUE;
-}
-
-static portBASE_TYPE timeout(ipc_io_t *io)
-{
-  static int i = 0;
-  u32 led;
-
-  if(i)
-  {
-    led = (LED_BLUE | (we_got_error?LED_RED:0) );
-  }
-  else
-  {
-    led = 0;
-  }
-
-  if(lit_aux_led)
-  {
-    led |= LED_ORANGE;
-  }
-
-  LED_out(led);
-  i = !i;
-
-  return pdTRUE;
-}
-
-static portBASE_TYPE msg(ipc_io_t *io, ipc_msg_id_t *id, ipc_msg_t *_msg)
-{
-  switch(*id)
-  {
-    case WATCHDOG_CMD:
+      LED_out(led);
+      lit_led_watchdog = !lit_led_watchdog;
+    }
+    else
+    {
+      /* recalculate timeout */
+      timeout = timeout - (xTaskGetTickCount() - sleep_time);
+      switch(msg.cmd)
       {
-        struct ipc_msg_watchdog_cmd *msg = &_msg->watchdog_cmd;
-        switch(msg->cmd)
-        {
-          case TASK_WATCHDOG_CMD_AUX_LED_LIT:
-            lit_aux_led = 1;
-            break;
+        case watchdog_cmd_aux_led_lit:
+          lit_led_aux = 1;
+          break;
 
-          case TASK_WATCHDOG_CMD_AUX_LED_QUENCH:
-            lit_aux_led = 0;
-            break;
+        case watchdog_cmd_aux_led_quench:
+          lit_led_aux = 0;
+          break;
 
-          default:
-            /* we silient ignore bad cmds */
-            break;
-        }
-        return pdTRUE;
+        default:
+          assert(0);
       }
-
-    default:
-      break;
+    }
   }
-  return pdFALSE;
 }
+

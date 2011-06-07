@@ -115,7 +115,7 @@
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
           <Simulator>
-            <UseSimulator>0</UseSimulator>
+            <UseSimulator>1</UseSimulator>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>1</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -126,7 +126,7 @@
             <LimitSpeedToRealTime>0</LimitSpeedToRealTime>
           </Simulator>
           <Target>
-            <UseTarget>1</UseTarget>
+            <UseTarget>0</UseTarget>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>0</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -136,7 +136,7 @@
             <RestoreToolbox>1</RestoreToolbox>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>8</TargetSelection>
+          <TargetSelection>6</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -402,19 +402,9 @@
               <FilePath>.\Firmware\src\stm32f10x_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_rcc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Firmware\src\stm32f10x_rcc.c</FilePath>
-            </File>
-            <File>
               <FileName>stm3210c_eval_ioe.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Firmware\stm3210c_eval_ioe.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f10x_i2c.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Firmware\src\stm32f10x_i2c.c</FilePath>
             </File>
             <File>
               <FileName>stm32f10x_exti.c</FileName>
@@ -436,6 +426,16 @@
               <FileType>1</FileType>
               <FilePath>.\Firmware\src\stm32f10x_adc.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Firmware\src\stm32f10x_i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Firmware\src\stm32f10x_rcc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -450,16 +450,6 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>ipc.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\ipc.h</FilePath>
-            </File>
-            <File>
-              <FileName>ipc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\ipc.c</FilePath>
             </File>
             <File>
               <FileName>ipc_msg.h</FileName>
@@ -485,16 +475,6 @@
               <FileName>task_input_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_input_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_ipc_testa.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_ipc_testa.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_ipc_testb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_ipc_testb.c</FilePath>
             </File>
             <File>
               <FileName>task_watchdog.c</FileName>
@@ -931,19 +911,9 @@
               <FilePath>.\Firmware\src\stm32f10x_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_rcc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Firmware\src\stm32f10x_rcc.c</FilePath>
-            </File>
-            <File>
               <FileName>stm3210c_eval_ioe.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Firmware\stm3210c_eval_ioe.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f10x_i2c.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Firmware\src\stm32f10x_i2c.c</FilePath>
             </File>
             <File>
               <FileName>stm32f10x_exti.c</FileName>
@@ -965,6 +935,16 @@
               <FileType>1</FileType>
               <FilePath>.\Firmware\src\stm32f10x_adc.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Firmware\src\stm32f10x_i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Firmware\src\stm32f10x_rcc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -979,16 +959,6 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>ipc.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\ipc.h</FilePath>
-            </File>
-            <File>
-              <FileName>ipc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\ipc.c</FilePath>
             </File>
             <File>
               <FileName>ipc_msg.h</FileName>
@@ -1014,16 +984,6 @@
               <FileName>task_input_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_input_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_ipc_testa.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_ipc_testa.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_ipc_testb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_ipc_testb.c</FilePath>
             </File>
             <File>
               <FileName>task_watchdog.c</FileName>

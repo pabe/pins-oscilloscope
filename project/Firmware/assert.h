@@ -2,6 +2,7 @@
 
 
 // Debugging: enable "assert"
+#include "setup.h"
 
 #undef assert
 #define assert(expr) ((expr) ? (void)0 : assert_failed(__FILE__, __LINE__))

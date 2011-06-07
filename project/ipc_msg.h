@@ -7,6 +7,9 @@
 
 #include "ipc.h"
 
+/*
+ * id that start with _ do now have payload body
+ */
 enum ipc_msg_id
 {
   ACKNOWLEDGE,
@@ -14,7 +17,11 @@ enum ipc_msg_id
   UNSUBSCRIBE,
   SET_SAMPLERATE,
   DATA,
-  WATCHDOG_CMD
+  WATCHDOG_CMD,
+  ID_SET,
+  ID_GET,
+  ID_SUBSCRIBE,
+  _ID_BAD_REQUEST
 };
 
 struct ipc_msg_head
@@ -35,6 +42,22 @@ struct ipc_fullmsg
   struct ipc_msg_head head;
   union ipc_msg
   {
+  
+    DEFINE_MSG(set,
+        uint32_t cmd;
+        uint8_t tag;
+        );
+
+    DEFINE_MSG(get,
+        uint32_t cmd;
+        uint8_t tag;
+        );
+
+    DEFINE_MSG(subscribe2,
+        int what;
+        ipc_modules_t subscriber;
+    );
+
     DEFINE_MSG(watchdog_cmd,
         uint8_t cmd;
         );

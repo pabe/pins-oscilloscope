@@ -18,6 +18,7 @@ typedef enum ipc_modules
 	ipc_mod_display,
   ipc_mod_watchdog,
   ipc_mod_input_gpio,
+  ipc_mod_controller,
   ipc_mod_testA,
   ipc_mod_testB,
 	ipc_mod_input,
@@ -46,6 +47,7 @@ struct ipc_io
 #include "ipc_msg.h"
 
 /******************************************************************************/
+portBASE_TYPE ipc_timeout_def(ipc_io_t *io);
 portBASE_TYPE ipc_msg_def(ipc_io_t *io, ipc_msg_id_t *id, ipc_msg_t *msg);
 
 /* if ipc_init() failas some queues may have been inited so a call to

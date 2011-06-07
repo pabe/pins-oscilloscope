@@ -13,7 +13,7 @@
 
 
 int samplerate = 50;
-
+OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
 
 int setSampleRate(int rate, int channel){
 	int cntr = 0;
@@ -112,7 +112,7 @@ void measureTask (void* params) {
 
 
 		
-		printf("xLastWakeTime %d \n", xLastWakeTime);
+		//printf("xLastWakeTime %d \n", xLastWakeTime);
 		
 
 	vTaskDelayUntil( &xLastWakeTime, xFrequency );	
@@ -120,8 +120,8 @@ void measureTask (void* params) {
 	}
 }
 
-
-  void measureInit(unsigned portBASE_TYPE uxPriority) {
+  void measureInit(void) {
+  //void measureInit(unsigned portBASE_TYPE uxPriority) {
  
  /* ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;	 // no dual ADC
   ADC_InitStructure.ADC_ScanConvMode = ENABLE;           // read from the channel(s) configured below
@@ -164,7 +164,7 @@ void measureTask (void* params) {
 
   
    xTaskCreate(measureTask,"",100, NULL, 1, NULL);
-       
+   
 
   assert(0);
 

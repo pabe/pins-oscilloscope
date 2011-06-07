@@ -21,6 +21,7 @@
 #include "task_ipc_testb.h"
 #include "task_input_gpio.h"
 #include "task_watchdog.h"
+#include "measure.h"
 #define WIDTH 320
 
 xSemaphoreHandle lcdLock;
@@ -109,7 +110,7 @@ typedef struct {
   void (*callback)(u16 x, u16 y, u16 pressure, void *data);
 } TSCallback;
 
-static TSCallback callbacks[64];
+static TSCallback callbacks[16];
 static u8 callbackNum = 0;
 
 void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
@@ -217,6 +218,7 @@ int main( void )
 
   initDisplay();
   setupButtons();
+  measureInit();
 
   xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL);
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL);

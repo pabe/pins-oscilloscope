@@ -4,18 +4,14 @@
  * TASK responsible for status leds and HW-watchdog reset circuts.
  * (For now a pure SW that toogles a LED.)
  */
-#include <stdio.h>
-#include <stdint.h>
 
 /* Firmware */
-#include "setup.h"
+#include "assert.h"
 
 /* FreeRTOS */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "assert.h"
 
-#include "config.h"
 #include "task_watchdog.h"
 #include "api_watchdog.h"
 

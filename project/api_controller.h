@@ -85,20 +85,4 @@ __inline portBASE_TYPE ipc_controller_send_cmd(controller_cmd_t cmd)
   return xQueueSendToBack(ipc_controller, &msg, portMAX_DELAY);
 }
 
-#if 0
-
-enum controller_subscribable
-{
-  CONTROLLER_SUB_MODE
-}
-
-typedef enum mode mode_t;
-typedef enum controller_subscribable controller_subscribable_t;
-
-#include "ipc.h"
-
-portBASE_TYPE mode_subscribe(ipc_io_t *io, ipc_modules_t subscriber, controller_subscribable_t what);
-portBASE_TYPE mode_set(ipc_io_t *io, mode_t *mode);
-portBASE_TYPR mode_get(ipc_io_t *io, mode_t *mode);;
-#endif
 #endif /* __API_CONTROLLER__H_ */

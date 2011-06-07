@@ -5,3 +5,4 @@ bin/
 oscilloscope.map
 oscilloscope.uvopt
 oscilloscope.uvgui.*
+tags

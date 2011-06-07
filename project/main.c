@@ -17,7 +17,9 @@
 /*-----------------------------------------------------------*/
 
 #include "task_input_gpio.h"
+#include "task_controller.h"
 #include "task_watchdog.h"
+#include "api_controller.h"
 #include "api_watchdog.h"
 #include "measure.h"
 #define WIDTH 320
@@ -211,15 +213,22 @@ int main( void )
 
   initDisplay();
   setupButtons();
+  if(pdFALSE == ipc_controller_init())
+  {
+    /* TODO: Output error mesg? */
+    task_watchdog_signal_error();
+  }
   if(pdFALSE == ipc_watchdog_init())
   {
-    /* TODO: handle failure */
+    /* TODO: Output error mesg? */
+    task_watchdog_signal_error();
   }
 
   xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL);
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL);
   xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL);
   xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL);
+  xTaskCreate(task_controller, "Controller", 100, NULL, 1, NULL);
   xTaskCreate(task_watchdog, "Watchdog driver", 100, NULL, 1, NULL);
   xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL);
 

@@ -511,6 +511,11 @@
               <FileType>1</FileType>
               <FilePath>.\task_input_touch.c</FilePath>
             </File>
+            <File>
+              <FileName>task_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_display.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1049,6 +1054,11 @@
               <FileName>task_input_touch.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_input_touch.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_display.c</FilePath>
             </File>
           </Files>
         </Group>

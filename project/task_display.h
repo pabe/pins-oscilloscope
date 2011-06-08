@@ -4,6 +4,8 @@
 #include "FreeRTOS.h"
 #include "oscilloscope.h"
 #include "measure.h"
+#include "semphr.h"
+#include "task.h"
 
 #define DISPLAY_X_RES 320
 #define DISPLAY_Y_RES 240
@@ -22,4 +24,6 @@ void display_show_analog(portBASE_TYPE latitude, portBASE_TYPE longitude);
 
 extern portBASE_TYPE display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS]; //This goes to the storage module eventualy
 extern portBASE_TYPE display_buffer_index[]; //This goes to the storage module eventualy
+
+extern xSemaphoreHandle lcdLock;
 #endif /* __DISPLAY_H_ */

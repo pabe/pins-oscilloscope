@@ -27,10 +27,12 @@ extern xQueueHandle ipc_controller;
 
 
 portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode);
+portBASE_TYPE ipc_controller_send_cmd(msg_controller_cmd_t cmd);
+
+/* returns 'subscribe_mode' messages */
 portBASE_TYPE ipc_controller_subscribe(
     ipc_addr_t subscriber,
     msg_controller_subscribe_variable_t var);
-portBASE_TYPE ipc_controller_send_cmd(msg_controller_cmd_t cmd);
 
 
 #endif /* __API_CONTROLLER__H_ */

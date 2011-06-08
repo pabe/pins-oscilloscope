@@ -10,6 +10,7 @@
 #include "config.h"
 #include "api_watchdog.h"
 #include "api_controller.h"
+#include "api_input_touch.h"
 
 /* public variables */
 
@@ -21,8 +22,9 @@ static portBASE_TYPE ipc_init_module(xQueueHandle* h, unsigned portBASE_TYPE uxQ
 /* public functions */
 portBASE_TYPE ipc_init(void)
 {
-  return ipc_init_module(&ipc_watchdog, IPC_QUEUE_LEN_WATCHDOG)
-    && ipc_init_module(&ipc_controller, IPC_QUEUE_LEN_CONTROLLER);
+  return ipc_init_module(&ipc_watchdog,  IPC_QUEUE_LEN_WATCHDOG)
+    && ipc_init_module(&ipc_controller,  IPC_QUEUE_LEN_CONTROLLER)
+    && ipc_init_module(&ipc_input_touch, IPC_QUEUE_LEN_INPUT_TOUCH);
 }
 
 void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id)

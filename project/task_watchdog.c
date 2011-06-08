@@ -71,19 +71,15 @@ void task_watchdog(void *p)
           handle_msg_cmd(&msg.data.watchdog_cmd);
           break;
 
+        case msg_subscribe_mode:
+          printf("watchdog: mode: %i.\n", msg.data.subscribe_mode);
+          break;
+
         default:
           /* TODO: Output error mesg? */
           task_watchdog_signal_error();
-          vTaskDelete(NULL);
       }
-#if 0
-      switch(msg.cmd)
-      {
 
-        default:
-          assert(0);
-      }
-#endif
       /* recalculate timeout */
       timeout = timeout - (xTaskGetTickCount() - sleep_time);
     }
@@ -96,15 +92,27 @@ static void handle_msg_cmd(msg_watchdog_cmd_t *cmd)
   switch(*cmd)
   {
     case watchdog_cmd_aux_led_lit:
+      {
+        static int i = 0;
+        if(!i)
+        {
+          i=1;
+          ipc_controller_subscribe(ipc_watchdog, ipc_controller_variable_mode);
+        }
+        else
+        {
+          ipc_controller_mode_set(oscilloscope_mode_oscilloscope);
+        }
+      }
       lit_led_aux = 1;
       break;
 
     case watchdog_cmd_aux_led_quench:
+      ipc_controller_mode_set(oscilloscope_mode_multimeter);
       lit_led_aux = 0;
       break;
     default:
       /* TODO: Output error mesg? */
       task_watchdog_signal_error();
-      vTaskDelete(NULL);
   }
 }

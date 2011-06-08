@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include "FreeRTOS.h"
+#include "task.h"
 #include <stm32f10x.h>
 #include <system_stm32f10x_cl.h>
 
@@ -91,4 +93,10 @@ void LED_out (u32 val) {
 void assert_failed(u8* file, u32 line) {
   printf("ASSERTION FAILURE: %s:%d\n", file, line);
   task_watchdog_signal_error();
+
+  /* if we are a task, we kill it */
+  if(xTaskGetCurrentTaskHandle())
+    vTaskDelete(NULL);
+
+  /* do something if we ar enot a task? */
 }

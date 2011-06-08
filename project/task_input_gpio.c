@@ -16,9 +16,10 @@
 #include "task.h"
 
 #include "config.h"
+#include "api_watchdog.h"
+#include "api_controller.h"
 #include "task_input_gpio.h"
 #include "task_watchdog.h"
-#include "api_watchdog.h"
 
 /* private functions */
 static portBASE_TYPE init(void);
@@ -41,11 +42,21 @@ void task_input_gpio(void *p)
     {
       /* TODO: we should fix a debouncer */
 
-      if(pdFALSE == ipc_watchdog_set_led_aux(pin_state))
+      static int i = 0;
+      i++;
+      switch(i)
       {
-        /* TODO: Output error mesg? */
-        task_watchdog_signal_error();
-        vTaskDelete(NULL);
+        case 1:
+          ipc_controller_mode_set(oscilloscope_mode_oscilloscope);
+          ipc_watchdog_set_led_aux(1);
+          break;
+        case 3:
+          ipc_controller_mode_set(oscilloscope_mode_multimeter);
+          ipc_watchdog_set_led_aux(0);
+          break;
+
+        case 4:
+          i = 0;
       }
     }
 

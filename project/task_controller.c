@@ -70,13 +70,19 @@ static void handle_msg_cmd(msg_controller_cmd_t *cmd)
   switch(*cmd)
   {
     case controller_cmd_set_mode_oscilloscope:
-      mode.msg.data.subscribe_mode = oscilloscope_mode_oscilloscope;
-      subscribe_execute(&mode);
+      if(mode.msg.data.subscribe_mode != oscilloscope_mode_oscilloscope)
+      {
+        mode.msg.data.subscribe_mode = oscilloscope_mode_oscilloscope;
+        subscribe_execute(&mode);
+      }
       break;
 
     case controller_cmd_set_mode_multimeter:
-      mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
-      subscribe_execute(&mode);
+      if(mode.msg.data.subscribe_mode != oscilloscope_mode_multimeter)
+      {
+        mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
+        subscribe_execute(&mode);
+      }
       break;
 
     default:

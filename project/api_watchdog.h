@@ -17,7 +17,6 @@
 extern xQueueHandle ipc_watchdog;
 typedef enum   msg_watchdog_cmd msg_watchdog_cmd_t;
 
-portBASE_TYPE ipc_watchdog_init(void);
 portBASE_TYPE ipc_watchdog_set_led_aux(portBASE_TYPE value);
 
 #endif /* __API_WATCHDOG__H_ */

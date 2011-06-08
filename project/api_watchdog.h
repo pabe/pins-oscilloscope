@@ -12,30 +12,12 @@
 
 #include "assert.h"
 #include "config.h"
-
-typedef enum
-{
-  watchdog_cmd_aux_led_lit,
-  watchdog_cmd_aux_led_quench
-} watchdog_cmd_t;
-
-typedef struct
-{
-  watchdog_cmd_t cmd;
-} msg_watchdog_t;
+#include "api.h"
 
 extern xQueueHandle ipc_watchdog;
+typedef enum   msg_watchdog_cmd msg_watchdog_cmd_t;
 
 __inline portBASE_TYPE ipc_watchdog_init(void);
+portBASE_TYPE ipc_watchdog_set_led_aux(portBASE_TYPE value);
 
-__inline portBASE_TYPE ipc_watchdog_init(void)
-{
-  /* we do not init twice! */
-  if(ipc_watchdog)
-    return pdFALSE;
-
-  ipc_watchdog = xQueueCreate(IPC_QUEUE_LEN_WATCHDOG, sizeof(msg_watchdog_t));
-
-  return ipc_watchdog ? pdTRUE : pdFALSE;
-}
 #endif /* __API_WATCHDOG__H_ */

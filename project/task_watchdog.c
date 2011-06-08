@@ -23,14 +23,15 @@
 #define LED_RED    LED_3
 #define LED_ORANGE LED_2
 
-/* private functions */
+/* public variables */
 
 /* private variables */
 static int we_got_error = 0;
 static int lit_led_aux = 0;
 static int lit_led_watchdog = 0;
 
-/* public variables */
+/* private functions */
+static void handle_msg_cmd(msg_watchdog_cmd_t *cmd);
 
 /* public functions */
 
@@ -45,7 +46,7 @@ void task_watchdog(void *p)
   while(1)
   {
     portTickType sleep_time;
-    msg_watchdog_t msg;
+    msg_t msg;
 
     sleep_time = xTaskGetTickCount();
     
@@ -64,22 +65,46 @@ void task_watchdog(void *p)
     }
     else
     {
-      /* recalculate timeout */
-      timeout = timeout - (xTaskGetTickCount() - sleep_time);
-      switch(msg.cmd)
+      switch(msg.head.id)
       {
-        case watchdog_cmd_aux_led_lit:
-          lit_led_aux = 1;
+        case msg_id_watchdog_cmd:
+          handle_msg_cmd(&msg.data.watchdog_cmd);
           break;
 
-        case watchdog_cmd_aux_led_quench:
-          lit_led_aux = 0;
-          break;
+        default:
+          /* TODO: Output error mesg? */
+          task_watchdog_signal_error();
+          vTaskDelete(NULL);
+      }
+#if 0
+      switch(msg.cmd)
+      {
 
         default:
           assert(0);
       }
+#endif
+      /* recalculate timeout */
+      timeout = timeout - (xTaskGetTickCount() - sleep_time);
     }
   }
 }
 
+/* private functions */
+static void handle_msg_cmd(msg_watchdog_cmd_t *cmd)
+{
+  switch(*cmd)
+  {
+    case watchdog_cmd_aux_led_lit:
+      lit_led_aux = 1;
+      break;
+
+    case watchdog_cmd_aux_led_quench:
+      lit_led_aux = 0;
+      break;
+    default:
+      /* TODO: Output error mesg? */
+      task_watchdog_signal_error();
+      vTaskDelete(NULL);
+  }
+}

@@ -30,7 +30,7 @@ void task_controller(void *p)
 {
   while(1)
   {
-    msg_controller_t msg;
+    msg_t msg;
 
     assert(ipc_controller);
     if(pdFALSE == xQueueReceive(ipc_controller, &msg, portMAX_DELAY))
@@ -40,10 +40,10 @@ void task_controller(void *p)
       vTaskDelete(NULL);
     }
 
-    switch(msg.head_msgtype)
+    switch(msg.head.id)
     {
-      case controller_msgtype_cmd:
-        handle_msg_cmd(&msg.data.cmd);
+      case msg_id_controller_cmd:
+        handle_msg_cmd(&msg.data.controller_cmd);
         break;
 
       default:
@@ -57,7 +57,7 @@ void task_controller(void *p)
 /* private functions */
 static void handle_msg_cmd(msg_controller_cmd_t *cmd)
 {
-  switch(cmd->cmd)
+  switch(*cmd)
   {
     case controller_cmd_set_mode_oscilloscope:
       printf("mode: osc|");

@@ -213,12 +213,8 @@ int main( void )
 
   initDisplay();
   setupButtons();
-  if(pdFALSE == ipc_controller_init())
-  {
-    /* TODO: Output error mesg? */
-    task_watchdog_signal_error();
-  }
-  if(pdFALSE == ipc_watchdog_init())
+  
+  if(pdFALSE == ipc_init())
   {
     /* TODO: Output error mesg? */
     task_watchdog_signal_error();

@@ -39,12 +39,13 @@ void task_input_gpio(void *p)
     uint8_t new_pin_state = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9);
     if(pin_state^new_pin_state)
     {
-      msg_watchdog_t msg;
+      /* TODO: we should fix a debouncer */
 
-      msg.cmd = pin_state ? watchdog_cmd_aux_led_lit : watchdog_cmd_aux_led_quench;
-      if(pdFALSE == xQueueSendToBack(ipc_watchdog, &msg, portMAX_DELAY))
+      if(pdFALSE == ipc_watchdog_set_led_aux(pin_state))
       {
-        /* TODO: handle error */
+        /* TODO: Output error mesg? */
+        task_watchdog_signal_error();
+        vTaskDelete(NULL);
       }
     }
 

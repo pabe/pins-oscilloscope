@@ -481,6 +481,26 @@
               <FileType>1</FileType>
               <FilePath>.\task_watchdog.c</FilePath>
             </File>
+            <File>
+              <FileName>api_controller.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_controller.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_watchdog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_watchdog.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_controller.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_controller.c</FilePath>
+            </File>
+            <File>
+              <FileName>api.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -989,6 +1009,26 @@
               <FileName>task_watchdog.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_watchdog.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_controller.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_controller.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_watchdog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_watchdog.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_controller.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_controller.c</FilePath>
+            </File>
+            <File>
+              <FileName>api.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api.c</FilePath>
             </File>
           </Files>
         </Group>

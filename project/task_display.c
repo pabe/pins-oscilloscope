@@ -11,9 +11,12 @@ void task_display(void *args) {
 	int i=0;
 	while(1) {
 		// Spin, read IPC, handle IPC
+		xSemaphoreTake(lcdLock, portMAX_DELAY);
 		display_sample(0, i);
 		display_sample(1, (i+2048) % 4096);
 		i = (i + 1) % 4096;
+		xSemaphoreGive(lcdLock);
+		vTaskDelay(1/portTICK_RATE_MS);
 	}
 	//assert(0);
 }
@@ -73,8 +76,8 @@ void display_sample(portBASE_TYPE channel, portBASE_TYPE sample) {
 	}
 }
 
-void display_show_analog(portBASE_TYPE latitude, portBASE_TYPE longitude) {
-	portBASE_TYPE x = DISPLAY_X_RES - latitude;
-	portBASE_TYPE y = DISPLAY_Y_RES - longitude / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
-	GLCD_putPixel(x,y);
+void display_show_analog(portBASE_TYPE x, portBASE_TYPE y) {
+	portBASE_TYPE disx = DISPLAY_X_RES - x;
+	portBASE_TYPE disy = DISPLAY_Y_RES - y / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
+	GLCD_putPixel(disx,disy);
 }

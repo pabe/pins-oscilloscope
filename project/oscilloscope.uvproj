@@ -501,6 +501,16 @@
               <FileType>1</FileType>
               <FilePath>.\api.c</FilePath>
             </File>
+            <File>
+              <FileName>api_input_touch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_input_touch.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_input_touch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_input_touch.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1029,6 +1039,16 @@
               <FileName>api.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\api.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_input_touch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_input_touch.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_input_touch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_input_touch.c</FilePath>
             </File>
           </Files>
         </Group>

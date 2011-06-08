@@ -17,6 +17,7 @@
 /*-----------------------------------------------------------*/
 
 #include "task_input_gpio.h"
+#include "task_input_touch.h"
 #include "task_controller.h"
 #include "task_watchdog.h"
 #include "api_controller.h"
@@ -228,6 +229,7 @@ int main( void )
   xTaskCreate(task_controller, "Controller", 100, NULL, 1, NULL);
   xTaskCreate(task_watchdog, "Watchdog driver", 100, NULL, 1, NULL);
   xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL);
+  xTaskCreate(task_input_touch, "Input driver for touchscreen", 100, NULL, 1, NULL);
   xTaskCreate(task_display, "Display", 100, NULL, 1, NULL);
 
 

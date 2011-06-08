@@ -1,6 +1,6 @@
 #ifndef __MEASURE_H_
 #define __MEASURE_H_
-
+#include "stm32f10x_adc.h"
 #define NUMBER_OF_CHANNELS 2  //Number of probes on the oscilloscope
 
 #define ADC_MAX ((1<<13)-1)

@@ -10,6 +10,7 @@ typedef struct {
   ADC_TypeDef* ADC;		  // ADC to use
   uint8_t ADC_Channel;	  // ADC Channel to use.. (ADC_Channel_0, ADC_Channel_1 ... 17
   int rate;               // Sample rate in Herz
+  int active;			  // 1 if channel should sample
   int subscribed;		  // 1 if has channel has subscribers.
   oscilloscope_input_t inputChannel;		  // Input number "seen" on the oscilloscope.
 } OscilloscopeChannel;

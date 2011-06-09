@@ -516,6 +516,11 @@
               <FileType>1</FileType>
               <FilePath>.\task_display.c</FilePath>
             </File>
+            <File>
+              <FileName>api_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_display.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

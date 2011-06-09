@@ -12,7 +12,6 @@
 /* FreeRTOS */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "portable.h"
 
 #include "task_watchdog.h"
 #include "task_controller.h"

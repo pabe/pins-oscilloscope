@@ -39,7 +39,13 @@ typedef struct
 	  controller_cmd_toggle_channel0_subbscribe,
 	  controller_cmd_toggle_channel1_subbscribe,
 	  controller_cmd_toggle_mode,
-	  controller_cmd_toggle_freeze_screen
+	  controller_cmd_toggle_freeze_screen,
+	  controller_cmd_pressed_time_axis_increase,
+	  controller_cmd_pressed_time_axis_decrease,
+	  controller_cmd_pressed_channel0_subbscribe,
+	  controller_cmd_pressed_channel1_subbscribe,
+	  controller_cmd_pressed_mode,
+	  controller_cmd_pressed_freeze_screen
     } controller_cmd;
 
     struct msg_controller_subscribe

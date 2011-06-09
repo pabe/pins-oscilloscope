@@ -14,7 +14,7 @@ void task_display(void *args) {
 		xSemaphoreTake(lcdLock, portMAX_DELAY);
 		display_sample(0, i);
 		display_sample(1, (i+2048) % 4096);
-		i = (i + 1) % 4096;
+		i = (i + 10) % 4096;
 		xSemaphoreGive(lcdLock);
 		vTaskDelay(1/portTICK_RATE_MS);
 	}
@@ -85,7 +85,7 @@ void display_show_analog(portBASE_TYPE x, portBASE_TYPE y) {
 	// |           | v
 	// |           |
 	// +-----------+
-	portBASE_TYPE disx = DISPLAY_Y_RES - y / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
+	portBASE_TYPE disx = (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT) - y / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
 	portBASE_TYPE disy = DISPLAY_X_RES - x;
 	GLCD_putPixel(disx,disy);
 }

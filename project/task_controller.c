@@ -34,7 +34,7 @@ static const ipc_loop_t msg_handle_table[] =
 /* public functions */
 void task_controller(void *p)
 {
-  subscribe_init(&mode, msg_subscribe_mode);
+  subscribe_init(&mode, msg_id_subscribe_mode);
   mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
 
   while(1)

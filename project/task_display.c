@@ -17,7 +17,7 @@ static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data);
 static oscilloscope_mode_t display_mode = oscilloscope_mode_oscilloscope;
 static const ipc_loop_t msg_handle_table[] =
 {
-  { msg_subscribe_mode,            handle_msg_subscribe_mode },
+  { msg_id_subscribe_mode,         handle_msg_subscribe_mode },
   { msg_id_display_toggle_channel, handle_msg_toggle_channel }
 };
 

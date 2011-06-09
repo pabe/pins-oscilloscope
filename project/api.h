@@ -27,7 +27,7 @@ typedef struct
       msg_id_display_toggle_channel,
       msg_id_watchdog_cmd,
       msg_id_measure_subscribe,
-      msg_subscribe_mode
+      msg_id_subscribe_mode
     } id;
   } head;
   union msg_data
@@ -64,6 +64,16 @@ typedef struct
       watchdog_cmd_aux_led_lit,
       watchdog_cmd_aux_led_quench
     } watchdog_cmd;
+
+    struct msg_measure_subscribe
+    {
+      enum msg_measure_subscribe_variable
+      {
+        ipc_measure_variable_data_ch0,
+        ipc_measure_variable_data_ch1
+      } variable;
+      ipc_addr_t subscriber;
+    } measure_subscribe;
 
     oscilloscope_mode_t subscribe_mode;
   } data;

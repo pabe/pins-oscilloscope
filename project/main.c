@@ -40,7 +40,7 @@ static void initDisplay () {
   GLCD_displayStringLn(Line3, " Embedded");
   GLCD_displayStringLn(Line4, " Systems");
 }
-
+/*
 static void lcdTask(void *params) {
   unsigned short col1 = Blue, col2 = Red, col3 = Green;
   unsigned short t;
@@ -58,7 +58,7 @@ static void lcdTask(void *params) {
     vTaskDelay(300 / portTICK_RATE_MS);
   }
 }
-
+ */ 
 /*-----------------------------------------------------------*/
 
 /**
@@ -215,6 +215,7 @@ int main( void )
 
   initDisplay();
   setupButtons();
+  measureInit();
   
   if(pdFALSE == ipc_init())
   {
@@ -222,7 +223,7 @@ int main( void )
     task_watchdog_signal_error();
   }
 
-  xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL);
+  //xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL);
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL);
   xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL);
   xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL);
@@ -231,7 +232,7 @@ int main( void )
   xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL);
   xTaskCreate(task_input_touch, "Input driver for touchscreen", 100, NULL, 1, NULL);
   xTaskCreate(task_display, "Display", 100, NULL, 1, NULL);
-
+  xTaskCreate( measureTask , "Measure", 100, NULL, 1, NULL);
 
   printf("Setup complete ");  // this is redirected to the display
 

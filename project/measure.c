@@ -9,24 +9,22 @@
 #include "queue.h"
 #include "stm3210c_eval_ioe.h"
 #include "stm32f10x_adc.h"
+#include "api_controller.h"
 
-
-
-int samplerate = 50;
+int samplerate = 50;  //FIX!
 OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
 
-int setSampleRate(int rate, int channel){
+portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel){
 	int cntr = 0;
  	while(cntr < NUMBER_OF_CHANNELS){
 		if(oChan[cntr].inputChannel == channel)
 			oChan[cntr].rate=rate;
 		cntr++;
  	}
- 	return 0;
+ 	return pdTRUE;;
 } 
 
-
-int getSampleRate(int channel){
+int getSampleRate(oscilloscope_input_t channel){
 	int cntr = 0;
  	while(cntr < NUMBER_OF_CHANNELS){
 		if(oChan[cntr].inputChannel == channel)
@@ -36,7 +34,7 @@ int getSampleRate(int channel){
  	return -1;
 } 
 
-int setSubscribe(int subscribe, int channel){
+portBASE_TYPE setSubscribe(int subscribe, oscilloscope_input_t channel){
 	
 	int cntr = 0;
 	while(cntr < NUMBER_OF_CHANNELS){
@@ -44,10 +42,10 @@ int setSubscribe(int subscribe, int channel){
 			oChan[cntr].subscribed=subscribe;
 		cntr++;
  	}
- 	return 0;
+ 	return pdTRUE;;
 } 
 
-int getSubscribe(int channel){
+int getSubscribe(oscilloscope_input_t channel){
 	
 	int cntr = 0;
 	while(cntr < NUMBER_OF_CHANNELS){
@@ -58,7 +56,7 @@ int getSubscribe(int channel){
  	return -1;
 } 
 
-double voltageConversion(int val){
+double voltageConversion(uint16_t val){
 	double maxAdcBits = 4095.0; // Should be > 0 
 	double maxVolts = 3.3;      
 	double voltsPerBit = (maxVolts / (maxAdcBits));
@@ -74,7 +72,7 @@ portTickType herzToTicks(int samplerate){
 		 return (portTickType)period_in_MS / portTICK_RATE_MS;
 }
 
-int readChannel(OscilloscopeChannel OChannel){
+uint16_t readChannel(OscilloscopeChannel OChannel){
 		ADC_RegularChannelConfig(OChannel.ADC,OChannel.ADC_Channel, 1, ADC_SampleTime_239Cycles5);
 		ADC_ClearFlag(OChannel.ADC, ADC_FLAG_EOC);
 		ADC_SoftwareStartConvCmd(OChannel.ADC, ENABLE);
@@ -84,39 +82,26 @@ int readChannel(OscilloscopeChannel OChannel){
 }	
 
 void measureTask (void* params) {
-	int voltage,  i;
-
+	int  packetCounter, i;
+	//oscilloscope_input_t i;
+    uint16_t adc_value;
     portTickType xLastWakeTime;
     portTickType xFrequency = herzToTicks(samplerate);
-
+	packetCounter = 0;
 
 	for(;;){
-
-
-
-	xLastWakeTime = xTaskGetTickCount();
-     
-
-
-	  
-	 for (i = 0; i < NUMBER_OF_CHANNELS;i++){
-			setSubscribe(1, i);  //Should be set by value from ipc FIX
-			setSampleRate(samplerate, i); //Should be set by value from ipc FIX
-		
-			
-			
-			voltage = readChannel(oChan[i]);
-			printf("%f \n", voltageConversion(voltage));
+		xLastWakeTime = xTaskGetTickCount();
+		for (i = 0; i < NUMBER_OF_CHANNELS;i++){
+			setSubscribe(1, oChan[i].inputChannel);  //Should be set by value from ipc FIX
+			setSampleRate(samplerate, oChan[i].inputChannel); //Should be set by value from ipc FIX
+			adc_value = readChannel(oChan[i]);
+			//printf("%.2f ", voltageConversion(adc_value));
+			ipc_controller_send_data(oChan[i].inputChannel,adc_value,packetCounter);
+			 // assert(0);  DO something about failure in sending message?
+			packetCounter++;
 		}
-
-
-
-		
-		//printf("xLastWakeTime %d \n", xLastWakeTime);
-		
-
+	//printf("xLastWakeTime %d \n", xLastWakeTime);
 	vTaskDelayUntil( &xLastWakeTime, xFrequency );	
-
 	}
 }
 
@@ -147,25 +132,19 @@ void measureTask (void* params) {
   while(ADC_GetCalibrationStatus(ADC1));
 
 
- if(NUMBER_OF_CHANNELS != 2)
-		assert(0); //this need to be generalized if other amount of chans is needed;
+ if(NUMBER_OF_CHANNELS != 2){
+		assert(0);} //this need to be generalized if other amount of chans is needed;
 									   
 	 oChan[0].ADC=ADC1;
-	 oChan[0].ADC_Channel=ADC_Channel_0;
+	 oChan[0].ADC_Channel=ADC_Channel_7;
      oChan[0].subscribed=	0;
-	 oChan[0].inputChannel = 1;
+	 oChan[0].inputChannel = input_channel0;
      oChan[0].rate=50;
 
 	 oChan[1].ADC=ADC1;
-	 oChan[1].ADC_Channel=ADC_Channel_1;
+	 oChan[1].ADC_Channel=ADC_Channel_8;
      oChan[1].subscribed=	0;
-	 oChan[1].inputChannel = 2;
+	 oChan[1].inputChannel = input_channel1;
      oChan[1].rate=50;
-
-  
-   xTaskCreate(measureTask,"",100, NULL, 1, NULL);
-   
-
-  assert(0);
-
+   //xTaskCreate(measureTask,"",100, NULL, 1, NULL);
 }

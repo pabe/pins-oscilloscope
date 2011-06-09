@@ -95,6 +95,9 @@ uint16_t readChannel(OscilloscopeChannel OChannel){
 
 void measureTask (void* params)
 {
+	int  packetCounter, i;
+	uint16_t adc_value;
+	packetCounter = 0;
   while(1)
   {
     if(pdTRUE == ipc_get(
@@ -103,11 +106,24 @@ void measureTask (void* params)
           msg_handle_table,
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
-#if 0
-      /* with no timeouts this should never happen so kill ourself */
-      task_watchdog_signal_error();
-      vTaskDelete(NULL);
-#endif
+
+
+		for (i = 0; i < NUMBER_OF_CHANNELS;i++){
+			setSubscribe(1, oChan[i].inputChannel);  //Should be set by value from ipc FIX
+			setSampleRate(samplerate, oChan[i].inputChannel); //Should be set by value from ipc FIX
+
+			if(oChan[i].active){ 
+
+				adc_value = readChannel(oChan[i]);
+				//printf("%.2f ", voltageConversion(adc_value));
+				ipc_controller_send_data(oChan[i].inputChannel,adc_value,packetCounter);
+			 	// assert(0);  DO something about failure in sending message?
+				packetCounter++;
+			}
+		}
+
+
+
     }
     else
     {    
@@ -125,6 +141,7 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *data)
   return pdTRUE;
 }
 
+#if 0
 void measureTaskOld (void* params) {
 	int  packetCounter, i;
 	//oscilloscope_input_t i;
@@ -152,7 +169,7 @@ void measureTaskOld (void* params) {
 	vTaskDelayUntil( &xLastWakeTime, xFrequency );	
 	}
 }
-
+#endif
   void measureInit(void) {
   //void measureInit(unsigned portBASE_TYPE uxPriority) {
  
@@ -196,5 +213,5 @@ void measureTaskOld (void* params) {
 	 oChan[1].inputChannel = input_channel1;
      oChan[1].rate=50;
 	 oChan[1].active=1;
-   //xTaskCreate(measureTask,"",100, NULL, 1, NULL);
+
 }

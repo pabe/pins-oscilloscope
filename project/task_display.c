@@ -1,24 +1,76 @@
+
+#include "api_controller.h"
+#include "api_display.h"
 #include "task_display.h"
+#include "task_watchdog.h"
 #include "oscilloscope.h"
 #include "GLCD.h"
 
 portBASE_TYPE display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS] = {0};
 portBASE_TYPE display_buffer_index[NUMBER_OF_CHANNELS] = {0};
 
-static oscilloscope_mode_t display_mode = oscilloscope_mode_oscilloscope;
+/* private functions */
+static portBASE_TYPE handle_msg_subscribe_mode(msg_data_t *data);
 
-void task_display(void *args) {
-	int i=0;
-	while(1) {
-		// Spin, read IPC, handle IPC
-		xSemaphoreTake(lcdLock, portMAX_DELAY);
-		display_sample(0, i);
-		display_sample(1, (i+2048) % 4096);
-		i = (i + 10) % 4096;
-		xSemaphoreGive(lcdLock);
-		vTaskDelay(1/portTICK_RATE_MS);
-	}
-	//assert(0);
+/* private variables */
+static oscilloscope_mode_t display_mode = oscilloscope_mode_oscilloscope;
+static const ipc_loop_t msg_handle_table[] =
+{
+  { msg_subscribe_mode, handle_msg_subscribe_mode }
+};
+
+void task_display(void *args)
+{
+  ipc_controller_subscribe(ipc_display, ipc_controller_variable_mode);
+
+	while(1)
+  {
+    if(pdTRUE == ipc_get(
+          ipc_display,
+          portMAX_DELAY,
+          msg_handle_table,
+          sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
+    {
+      /* with no timeouts this should never happen so kill ourself */
+      task_watchdog_signal_error();
+      vTaskDelete(NULL);
+    }
+    else
+    {
+      task_watchdog_signal_error();
+       vTaskDelete(NULL);
+    }
+  }
+}
+#if 0 /* orig code */
+// Spin, read IPC, handle IPC
+int i=0;
+xSemaphoreTake(lcdLock, portMAX_DELAY);
+display_sample(0, i);
+display_sample(1, (i+2048) % 4096);
+i = (i + 10) % 4096;
+xSemaphoreGive(lcdLock);
+vTaskDelay(1/portTICK_RATE_MS);
+#endif
+
+/* private functions */
+static portBASE_TYPE handle_msg_subscribe_mode(msg_data_t *data)
+{
+  switch(data->subscribe_mode)
+  {
+    case oscilloscope_mode_oscilloscope:
+      printf("|LOL0|");
+      break;
+
+    case oscilloscope_mode_multimeter:
+      printf("|LOL1)");
+      break;
+
+    default:
+      return pdFALSE;
+  }
+
+  return pdTRUE;
 }
 
 // Call when layout has changed

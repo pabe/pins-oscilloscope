@@ -26,11 +26,18 @@ extern xQueueHandle ipc_controller;
 
 
 portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode);
+portBASE_TYPE ipc_controller_toggle_mode(void);
+
+/*
+ * moved to api_display:
+ * ipc_controller_toggle_channel0_subbscribe
+ * ipc_controller_toggle_channel1_subbscribe
+ */
+
 portBASE_TYPE ipc_controller_toggle_time_axis_increase(void);
 portBASE_TYPE ipc_controller_toggle_time_axis_decrease(void);
 portBASE_TYPE ipc_controller_toggle_channel0_subbscribe(void);
 portBASE_TYPE ipc_controller_toggle_channel1_subbscribe(void);
-portBASE_TYPE ipc_controller_toggle_mode(void);
 portBASE_TYPE ipc_controller_toggle_freeze_screen(void);
 
 /* TODO should maybe be in a diffrent api... */

@@ -4,6 +4,7 @@
  * API to interface the controller over IPC.
  */
 
+#include "assert.h"
 #include "api_controller.h"
 
 /* public variables */
@@ -16,7 +17,6 @@ __inline static
 portBASE_TYPE ipc_controller_send_cmd(msg_controller_cmd_t cmd);
 
 /* public functions */
-
 portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode)
 {
   msg_controller_cmd_t cmd;
@@ -35,6 +35,11 @@ portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode)
   }
 
   return ipc_controller_send_cmd(cmd);
+}
+
+portBASE_TYPE ipc_controller_toggle_mode(void)
+{
+  return ipc_controller_send_cmd(controller_cmd_toggle_mode);
 }
 
 portBASE_TYPE ipc_controller_toggle_time_axis_increase(void)
@@ -57,10 +62,6 @@ portBASE_TYPE ipc_controller_toggle_channel1_subbscribe(void)
   return pdFALSE;
 }
 
-portBASE_TYPE ipc_controller_toggle_mode(void)
-{
-  return pdFALSE;
-}
 
 portBASE_TYPE ipc_controller_toggle_freeze_screen(void)
 {

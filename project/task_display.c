@@ -11,12 +11,14 @@ portBASE_TYPE display_buffer_index[NUMBER_OF_CHANNELS] = {0};
 
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
+static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data);
 
 /* private variables */
 static oscilloscope_mode_t display_mode = oscilloscope_mode_oscilloscope;
 static const ipc_loop_t msg_handle_table[] =
 {
-  { msg_subscribe_mode, handle_msg_subscribe_mode }
+  { msg_subscribe_mode,            handle_msg_subscribe_mode },
+  { msg_id_display_toggle_channel, handle_msg_toggle_channel }
 };
 
 void task_display(void *args)
@@ -64,6 +66,22 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 
     case oscilloscope_mode_multimeter:
       printf("|LOL1)");
+      break;
+
+    default:
+      return pdFALSE;
+  }
+
+  return pdTRUE;
+}
+
+static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data)
+{
+  switch(data->msg_display_toggle_channel)
+  {
+    case input_channel0:
+    case input_channel1:
+      assert(0);
       break;
 
     default:

@@ -24,6 +24,7 @@ typedef struct
        */
       msg_id_controller_cmd,
       msg_id_controller_subscribe,
+      msg_id_display_toggle_channel,
       msg_id_watchdog_cmd,
       msg_subscribe_mode
     } id;
@@ -33,14 +34,11 @@ typedef struct
     enum msg_controller_cmd
     {
       controller_cmd_set_mode_oscilloscope,
-
       controller_cmd_set_mode_multimeter,
+      controller_cmd_toggle_mode,
+
       controller_cmd_toggle_time_axis_increase,
 	  controller_cmd_toggle_time_axis_decrease,
-	  controller_cmd_toggle_channel0_subbscribe,
-	  controller_cmd_toggle_channel1_subbscribe,
-	  controller_cmd_toggle_mode,
-	  controller_cmd_toggle_freeze_screen,
 	  controller_cmd_pressed_time_axis_increase,
 	  controller_cmd_pressed_time_axis_decrease,
 	  controller_cmd_pressed_channel0_subbscribe,
@@ -57,6 +55,8 @@ typedef struct
       } variable;
       ipc_addr_t subscriber;
     } controller_subscribe;
+    
+    oscilloscope_input_t msg_display_toggle_channel;
 
     enum msg_watchdog_cmd
     {

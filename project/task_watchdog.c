@@ -25,7 +25,7 @@
 
 
 /* private functions */
-static portBASE_TYPE handle_msg_cmd(msg_data_t *msg);
+static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *msg);
 
 /* public variables */
 /* private variables */
@@ -71,7 +71,7 @@ void task_watchdog(void *p)
 }
 
 /* private functions */
-static portBASE_TYPE handle_msg_cmd(msg_data_t *msg)
+static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *msg)
 {
   switch(msg->watchdog_cmd)
   {

@@ -10,7 +10,7 @@ portBASE_TYPE display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS] = {0};
 portBASE_TYPE display_buffer_index[NUMBER_OF_CHANNELS] = {0};
 
 /* private functions */
-static portBASE_TYPE handle_msg_subscribe_mode(msg_data_t *data);
+static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
 
 /* private variables */
 static oscilloscope_mode_t display_mode = oscilloscope_mode_oscilloscope;
@@ -54,7 +54,7 @@ vTaskDelay(1/portTICK_RATE_MS);
 #endif
 
 /* private functions */
-static portBASE_TYPE handle_msg_subscribe_mode(msg_data_t *data)
+static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 {
   switch(data->subscribe_mode)
   {

@@ -53,7 +53,7 @@ portBASE_TYPE ipc_get(
     {
       if(handlers[i].id == msg.head.id)
       {
-        if(pdFALSE == handlers[i].handler(&msg.data))
+        if(pdFALSE == handlers[i].handler(msg.head.id, &msg.data))
           return pdFALSE;
         break;
       }

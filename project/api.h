@@ -79,7 +79,7 @@ typedef struct
 typedef struct 
 {
   enum msg_id id;
-  portBASE_TYPE (*handler)(msg_data_t *data);
+  portBASE_TYPE (*handler)(msg_id_t id, msg_data_t *data);
 } ipc_loop_t;
 
 

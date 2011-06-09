@@ -19,8 +19,8 @@
 
 
 /* private functions */
-static portBASE_TYPE handle_msg_cmd(msg_data_t *cmd);
-static portBASE_TYPE handle_msg_subscribe(msg_data_t *msg);
+static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *cmd);
+static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg);
 
 /* public variables */
 /* private variables */
@@ -58,7 +58,7 @@ void task_controller(void *p)
 }
 
 /* private functions */
-static portBASE_TYPE handle_msg_cmd(msg_data_t *data)
+static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
 {
   switch(data->controller_cmd)
   {
@@ -84,7 +84,7 @@ static portBASE_TYPE handle_msg_cmd(msg_data_t *data)
   return pdTRUE;
 }
 
-static portBASE_TYPE handle_msg_subscribe(msg_data_t *data)
+static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *data)
 {
   switch(data->controller_subscribe.variable)
   {

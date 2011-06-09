@@ -42,22 +42,24 @@ void task_input_gpio(void *p)
     {
       /* TODO: we should fix a debouncer */
       static int i = 0;
-		// Bounce?
-		vTaskDelay(50/portTICK_RATE_MS);
-		if(new_pin_state == GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9))
-      switch(++i)
+		
+      vTaskDelay(50/portTICK_RATE_MS);
+      if(new_pin_state == GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9))
       {
-        case 1:
-          ipc_controller_toggle_mode();
-          ipc_watchdog_set_led_aux(1);
-          break;
-        case 3:
-          ipc_controller_toggle_mode();
-          ipc_watchdog_set_led_aux(0);
-          break;
+        switch(++i)
+        {
+          case 1:
+            ipc_controller_toggle_mode();
+            ipc_watchdog_set_led_aux(1);
+            break;
+          case 3:
+            ipc_controller_toggle_mode();
+            ipc_watchdog_set_led_aux(0);
+            break;
 
-        case 4:
-          i = 0;
+          case 4:
+            i = 0;
+        }
       }
     }
 

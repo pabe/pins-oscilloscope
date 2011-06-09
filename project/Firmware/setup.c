@@ -91,7 +91,7 @@ void LED_out (u32 val) {
 
 /* Function to execute if an assertion failed */
 void assert_failed(u8* file, u32 line) {
-  printf("ASSERTION FAILURE: %s:%d\n", file, line);
+  printf("ASSERTION FAILURE: %s:%d ", file, line);
   task_watchdog_signal_error();
 
   /* if we are a task, we kill it */

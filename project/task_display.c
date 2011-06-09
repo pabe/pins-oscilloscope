@@ -77,7 +77,15 @@ void display_sample(portBASE_TYPE channel, portBASE_TYPE sample) {
 }
 
 void display_show_analog(portBASE_TYPE x, portBASE_TYPE y) {
-	portBASE_TYPE disx = DISPLAY_X_RES - x;
-	portBASE_TYPE disy = DISPLAY_Y_RES - y / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
+	// Stupid display has all messed up coordinate system :/
+	// We pretend this is not the case...
+	//          <- y
+	// +-----------+ x
+	// |           | |
+	// |           | v
+	// |           |
+	// +-----------+
+	portBASE_TYPE disx = DISPLAY_Y_RES - y / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
+	portBASE_TYPE disy = DISPLAY_X_RES - x;
 	GLCD_putPixel(disx,disy);
 }

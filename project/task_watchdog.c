@@ -47,7 +47,7 @@ void task_watchdog(void *p)
 {
   while(1)
   {
-    if(pdTRUE == ipc_loop(
+    if(pdTRUE == ipc_get(
           ipc_watchdog,
           CFG_TASK_WATCHDOG__POLLING_PERIOD,
           msg_handle_table,

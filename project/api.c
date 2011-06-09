@@ -29,7 +29,7 @@ portBASE_TYPE ipc_init(void)
     && ipc_init_module(&ipc_input_touch, IPC_QUEUE_LEN_INPUT_TOUCH);
 }
 
-portBASE_TYPE ipc_loop(
+portBASE_TYPE ipc_get(
     ipc_addr_t addr,
     portTickType xTicksToWait,
     const ipc_loop_t handlers[],

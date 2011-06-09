@@ -40,7 +40,7 @@ void task_controller(void *p)
 
   while(1)
   {
-    if(pdTRUE == ipc_loop(
+    if(pdTRUE == ipc_get(
           ipc_controller,
           portMAX_DELAY,
           msg_handle_table,
@@ -55,33 +55,6 @@ void task_controller(void *p)
       task_watchdog_signal_error();
       vTaskDelete(NULL);
     }
-#if 0
-    msg_t msg;
-
-    assert(ipc_controller);
-    if(pdFALSE == xQueueReceive(ipc_controller, &msg, portMAX_DELAY))
-    {
-      /* with no timeouts this should never happen so kill ourself */
-      task_watchdog_signal_error();
-      vTaskDelete(NULL);
-    }
-
-    switch(msg.head.id)
-    {
-      case msg_id_controller_cmd:
-        handle_msg_cmd(&msg.data.controller_cmd);
-        break;
-
-      case msg_id_controller_subscribe:
-        handle_msg_subscribe(&msg.data.controller_subscribe);
-        break;
-
-      default:
-        /* TODO: Output error mesg? */
-        task_watchdog_signal_error();
-        vTaskDelete(NULL);
-    }
-#endif
   }
 }
 

@@ -26,6 +26,7 @@ typedef struct
       msg_id_controller_subscribe,
       msg_id_display_toggle_channel,
       msg_id_watchdog_cmd,
+      msg_id_measure_subscribe,
       msg_subscribe_mode
     } id;
   } head;

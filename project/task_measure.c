@@ -5,14 +5,26 @@
 #include "task.h"
 #include "setup.h"
 #include "assert.h"
-#include "task_measure.h"
 #include "queue.h"
 #include "stm3210c_eval_ioe.h"
 #include "stm32f10x_adc.h"
+
 #include "api_controller.h"
+#include "api_measure.h"
+#include "task_watchdog.h"
+#include "task_measure.h"
 
 int samplerate = 50;  //FIX!
 OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
+
+/* private functions */
+static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *cmd);
+
+/* private variables */
+static const ipc_loop_t msg_handle_table[] =
+{
+  { msg_id_measure_subscribe, handle_msg_subscribe } /* temp, will kill ipc_get()! */
+};
 
 portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel){
 	int cntr = 0;
@@ -81,7 +93,39 @@ uint16_t readChannel(OscilloscopeChannel OChannel){
 	
 }	
 
-void measureTask (void* params) {
+void measureTask (void* params)
+{
+  while(1)
+  {
+    if(pdTRUE == ipc_get(
+          ipc_measure,
+          herzToTicks(samplerate),
+          msg_handle_table,
+          sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
+    {
+#if 0
+      /* with no timeouts this should never happen so kill ourself */
+      task_watchdog_signal_error();
+      vTaskDelete(NULL);
+#endif
+    }
+    else
+    {    
+      /* ipc_get() failed in some way */
+      task_watchdog_signal_error();
+      vTaskDelete(NULL);
+    }
+  }
+}
+
+/* private functions */
+static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *data)
+{
+  /* TODO: Write me! */
+  return pdTRUE;
+}
+
+void measureTaskOld (void* params) {
 	int  packetCounter, i;
 	//oscilloscope_input_t i;
     uint16_t adc_value;

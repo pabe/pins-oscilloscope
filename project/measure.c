@@ -108,9 +108,9 @@ void measureTask (void* params) {
 			
 			
 			adc_value = readChannel(oChan[i]);
-			printf("%.2f ", voltageConversion(adc_value));
+			//printf("%.2f ", voltageConversion(adc_value));
 
-			//if(!ipc_controller_send_data(oChan[i].inputChannel,adc_value,packetCounter));
+			ipc_controller_send_data(oChan[i].inputChannel,adc_value,packetCounter);
 			 // assert(0);
 
 

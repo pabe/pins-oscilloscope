@@ -28,7 +28,7 @@ typedef struct
       msg_subscribe_mode
     } id;
   } head;
-  union
+  union msg_data
   {
     enum msg_controller_cmd
     {
@@ -60,6 +60,8 @@ typedef struct
     oscilloscope_mode_t subscribe_mode;
   } data;
 } msg_t;
+typedef enum  msg_id   msg_id_t;
+typedef union msg_data msg_data_t;
 
 typedef struct
 {
@@ -67,9 +69,25 @@ typedef struct
   xQueueHandle queues[CONFIG_SUBSCRIBE_MSG_HOOKS];
 } subscribe_msg_t;
 
-typedef enum msg_id msg_id_t;
+typedef struct 
+{
+  enum msg_id id;
+  portBASE_TYPE (*handler)(msg_data_t *data);
+} ipc_loop_t;
+
 
 portBASE_TYPE ipc_init(void);
+
+/*
+ * return:
+ * true = timeout
+ * false = error
+ */
+portBASE_TYPE ipc_loop(
+    ipc_addr_t addr,
+    portTickType xTicksToWait,
+    const ipc_loop_t handlers[],
+    size_t n);
 void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id);
 void subscribe_execute(subscribe_msg_t *v);
 portBASE_TYPE subscribe_add(subscribe_msg_t *v, ipc_addr_t subscriber);

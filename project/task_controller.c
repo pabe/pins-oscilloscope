@@ -19,14 +19,18 @@
 #include "api_controller.h"
 
 
-/* public variables */
+/* private functions */
+static portBASE_TYPE handle_msg_cmd(msg_data_t *cmd);
+static portBASE_TYPE handle_msg_subscribe(msg_data_t *msg);
 
+/* public variables */
 /* private variables */
 static subscribe_msg_t mode;
-
-/* private functions */
-static void handle_msg_cmd(msg_controller_cmd_t *cmd);
-static void handle_msg_subscribe(msg_controller_subscribe_t *msg);
+static const ipc_loop_t msg_handle_table[] =
+{
+  { msg_id_controller_cmd,       handle_msg_cmd },
+  { msg_id_controller_subscribe, handle_msg_subscribe }
+};
 
 /* public functions */
 void task_controller(void *p)
@@ -36,6 +40,22 @@ void task_controller(void *p)
 
   while(1)
   {
+    if(pdTRUE == ipc_loop(
+          ipc_controller,
+          portMAX_DELAY,
+          msg_handle_table,
+          sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
+    {
+      /* with no timeouts this should never happen so kill ourself */
+      task_watchdog_signal_error();
+      vTaskDelete(NULL);
+    }
+    else
+    {    
+      task_watchdog_signal_error();
+      vTaskDelete(NULL);
+    }
+#if 0
     msg_t msg;
 
     assert(ipc_controller);
@@ -61,13 +81,14 @@ void task_controller(void *p)
         task_watchdog_signal_error();
         vTaskDelete(NULL);
     }
+#endif
   }
 }
 
 /* private functions */
-static void handle_msg_cmd(msg_controller_cmd_t *cmd)
+static portBASE_TYPE handle_msg_cmd(msg_data_t *data)
 {
-  switch(*cmd)
+  switch(data->controller_cmd)
   {
     case controller_cmd_set_mode_oscilloscope:
       if(mode.msg.data.subscribe_mode != oscilloscope_mode_oscilloscope)
@@ -86,26 +107,24 @@ static void handle_msg_cmd(msg_controller_cmd_t *cmd)
       break;
 
     default:
-      /* TODO: Output error mesg? */
-      task_watchdog_signal_error();
-      vTaskDelete(NULL);
+      return pdFALSE;
   }
+  return pdTRUE;
 }
 
-static void handle_msg_subscribe(msg_controller_subscribe_t *msg)
+static portBASE_TYPE handle_msg_subscribe(msg_data_t *data)
 {
-  switch(msg->variable)
+  switch(data->controller_subscribe.variable)
   {
     case ipc_controller_variable_mode:
-      if(pdFALSE == subscribe_add(&mode, msg->subscriber))
+      if(pdFALSE == subscribe_add(&mode, data->controller_subscribe.subscriber))
       {
         /* TODO: Output error mesg? */
       }
       break;
 
     default:
-      /* TODO: Output error mesg? */
-      task_watchdog_signal_error();
-      vTaskDelete(NULL);
+      return pdFALSE;
   }
+  return pdTRUE;
 }

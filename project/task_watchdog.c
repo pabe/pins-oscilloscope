@@ -23,16 +23,19 @@
 #define LED_RED    LED_3
 #define LED_ORANGE LED_2
 
-/* public variables */
 
+/* private functions */
+static portBASE_TYPE handle_msg_cmd(msg_data_t *msg);
+
+/* public variables */
 /* private variables */
 static int we_got_error = 0;
 static int lit_led_aux = 0;
 static int lit_led_watchdog = 0;
-
-/* private functions */
-static void handle_msg_cmd(msg_watchdog_cmd_t *cmd);
-
+static const ipc_loop_t msg_handle_table[] =
+{
+  { msg_id_watchdog_cmd, handle_msg_cmd }
+};
 /* public functions */
 
 void task_watchdog_signal_error(void)
@@ -42,19 +45,15 @@ void task_watchdog_signal_error(void)
 
 void task_watchdog(void *p)
 {
-  portTickType timeout = CFG_TASK_WATCHDOG__POLLING_PERIOD;
   while(1)
   {
-    portTickType sleep_time;
-    msg_t msg;
-
-    sleep_time = xTaskGetTickCount();
-    
-    assert(ipc_watchdog);
-    if(pdFALSE == xQueueReceive(ipc_watchdog, &msg, timeout))
+    if(pdTRUE == ipc_loop(
+          ipc_watchdog,
+          CFG_TASK_WATCHDOG__POLLING_PERIOD,
+          msg_handle_table,
+          sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
       u32 led;
-      timeout = CFG_TASK_WATCHDOG__POLLING_PERIOD;
 
       led  = lit_led_watchdog ? LED_BLUE   : 0;
       led |= we_got_error     ? LED_RED    : 0;
@@ -65,27 +64,16 @@ void task_watchdog(void *p)
     }
     else
     {
-      switch(msg.head.id)
-      {
-        case msg_id_watchdog_cmd:
-          handle_msg_cmd(&msg.data.watchdog_cmd);
-          break;
-
-        default:
-          /* TODO: Output error mesg? */
-          task_watchdog_signal_error();
-      }
-
-      /* recalculate timeout */
-      timeout = timeout - (xTaskGetTickCount() - sleep_time);
+      task_watchdog_signal_error();
+      vTaskDelete(NULL);
     }
   }
 }
 
 /* private functions */
-static void handle_msg_cmd(msg_watchdog_cmd_t *cmd)
+static portBASE_TYPE handle_msg_cmd(msg_data_t *msg)
 {
-  switch(*cmd)
+  switch(msg->watchdog_cmd)
   {
     case watchdog_cmd_aux_led_lit:
       lit_led_aux = 1;
@@ -96,7 +84,8 @@ static void handle_msg_cmd(msg_watchdog_cmd_t *cmd)
       break;
 
     default:
-      /* TODO: Output error mesg? */
-      task_watchdog_signal_error();
+      return pdFALSE;
   }
+
+  return pdTRUE;
 }

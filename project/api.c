@@ -6,6 +6,8 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "task.h"
+
 #include "api.h"
 #include "config.h"
 #include "api_watchdog.h"
@@ -25,6 +27,37 @@ portBASE_TYPE ipc_init(void)
   return ipc_init_module(&ipc_watchdog,  IPC_QUEUE_LEN_WATCHDOG)
     && ipc_init_module(&ipc_controller,  IPC_QUEUE_LEN_CONTROLLER)
     && ipc_init_module(&ipc_input_touch, IPC_QUEUE_LEN_INPUT_TOUCH);
+}
+
+portBASE_TYPE ipc_loop(
+    ipc_addr_t addr,
+    portTickType xTicksToWait,
+    const ipc_loop_t handlers[],
+    size_t n)
+{
+  msg_t msg;
+  portTickType sleep_time;
+  int i;
+
+  assert(addr);
+
+  while(1)
+  {
+    sleep_time = xTaskGetTickCount();
+    if(pdFALSE == xQueueReceive(addr, &msg, xTicksToWait))
+      return pdTRUE;
+
+    for(i=0; i<n; i++)
+    {
+      if(handlers[i].id == msg.head.id)
+      {
+        if(pdFALSE == handlers[i].handler(&msg.data))
+          return pdFALSE;
+        break;
+      }
+    }
+    xTicksToWait -= xTaskGetTickCount() - sleep_time;
+  }
 }
 
 void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id)

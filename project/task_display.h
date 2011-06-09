@@ -3,7 +3,7 @@
 
 #include "FreeRTOS.h"
 #include "oscilloscope.h"
-#include "measure.h"
+#include "task_measure.h"
 #include "semphr.h"
 #include "task.h"
 

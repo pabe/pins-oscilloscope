@@ -462,16 +462,6 @@
               <FilePath>.\config.h</FilePath>
             </File>
             <File>
-              <FileName>measure.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\measure.c</FilePath>
-            </File>
-            <File>
-              <FileName>measure.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\measure.h</FilePath>
-            </File>
-            <File>
               <FileName>task_input_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\task_input_gpio.c</FilePath>
@@ -520,6 +510,11 @@
               <FileName>api_display.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\api_display.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_measure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_measure.c</FilePath>
             </File>
           </Files>
         </Group>

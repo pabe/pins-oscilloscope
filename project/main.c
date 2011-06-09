@@ -22,7 +22,7 @@
 #include "task_watchdog.h"
 #include "api_controller.h"
 #include "api_watchdog.h"
-#include "measure.h"
+#include "task_measure.h"
 #include "task_display.h"
 #define WIDTH 320
 

@@ -5,8 +5,8 @@
 #define IPC_QUEUE_LEN_CONTROLLER      2
 #define IPC_QUEUE_LEN_INPUT_TOUCH     2
 #define IPC_QUEUE_LEN_DISPLAY         2
+#define IPC_QUEUE_LEN_MEASURE         2
 //#define IPC_QUEUE_LEN_INPUT_GPIO      1
-//#define IPC_QUEUE_LEN_MEASURING       2
 
 #define CONFIG_SUBSCRIBE_MSG_HOOKS 2
 

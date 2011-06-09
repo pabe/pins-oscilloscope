@@ -511,6 +511,11 @@
               <FileType>1</FileType>
               <FilePath>.\task_measure.c</FilePath>
             </File>
+            <File>
+              <FileName>api_measure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_measure.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

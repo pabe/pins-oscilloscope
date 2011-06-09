@@ -14,6 +14,7 @@
 #include "api_controller.h"
 #include "api_input_touch.h"
 #include "api_display.h"
+#include "api_measure.h"
 
 /* public variables */
 
@@ -28,7 +29,8 @@ portBASE_TYPE ipc_init(void)
   return ipc_init_module(&ipc_watchdog,  IPC_QUEUE_LEN_WATCHDOG)
     && ipc_init_module(&ipc_controller,  IPC_QUEUE_LEN_CONTROLLER)
     && ipc_init_module(&ipc_input_touch, IPC_QUEUE_LEN_INPUT_TOUCH)
-    && ipc_init_module(&ipc_display,     IPC_QUEUE_LEN_DISPLAY);
+    && ipc_init_module(&ipc_display,     IPC_QUEUE_LEN_DISPLAY)
+    && ipc_init_module(&ipc_measure,     IPC_QUEUE_LEN_MEASURE);
 }
 
 portBASE_TYPE ipc_get(

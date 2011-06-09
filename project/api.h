@@ -34,12 +34,12 @@ typedef struct
     {
       controller_cmd_set_mode_oscilloscope,
       controller_cmd_set_mode_multimeter,
-	  controller_cmd_toggle_time_axis_increase,
-	  controller_cmd_toggle_time_axis_decrease,
-	  controller_cmd_toggle_channel0_subbscribe,
-	  controller_cmd_toggle_channel1_subbscribe,
-	  controller_cmd_toggle_mode,
-	  controller_cmd_toggle_freeze_screen
+      controller_cmd_toggle_time_axis_increase,
+      controller_cmd_toggle_time_axis_decrease,
+      controller_cmd_toggle_channel0_subbscribe,
+      controller_cmd_toggle_channel1_subbscribe,
+      controller_cmd_toggle_mode,
+      controller_cmd_toggle_freeze_screen
     } controller_cmd;
 
     struct msg_controller_subscribe

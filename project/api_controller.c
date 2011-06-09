@@ -6,7 +6,16 @@
 
 #include "api_controller.h"
 
+/* public variables */
 xQueueHandle ipc_controller;
+
+/* private variables */
+
+/* private functions */
+__inline static 
+portBASE_TYPE ipc_controller_send_cmd(msg_controller_cmd_t cmd);
+
+/* public functions */
 
 portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode)
 {
@@ -28,14 +37,34 @@ portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode)
   return ipc_controller_send_cmd(cmd);
 }
 
-portBASE_TYPE ipc_controller_send_cmd(msg_controller_cmd_t cmd)
+portBASE_TYPE ipc_controller_toggle_time_axis_increase(void)
 {
-  msg_t msg;
-  msg.head.id = msg_id_controller_cmd;
-  msg.data.controller_cmd = cmd;
+  return pdFALSE;
+}
 
-  assert(ipc_controller);
-  return xQueueSendToBack(ipc_controller, &msg, portMAX_DELAY);
+portBASE_TYPE ipc_controller_toggle_time_axis_decrease(void)
+{
+  return pdFALSE;
+}
+
+portBASE_TYPE ipc_controller_toggle_channel0_subbscribe(void)
+{
+  return pdFALSE;
+}
+
+portBASE_TYPE ipc_controller_toggle_channel1_subbscribe(void)
+{
+  return pdFALSE;
+}
+
+portBASE_TYPE ipc_controller_toggle_mode(void)
+{
+  return pdFALSE;
+}
+
+portBASE_TYPE ipc_controller_toggle_freeze_screen(void)
+{
+  return pdFALSE;
 }
 
 portBASE_TYPE ipc_controller_subscribe(
@@ -51,3 +80,14 @@ portBASE_TYPE ipc_controller_subscribe(
   return xQueueSendToBack(ipc_controller, &msg, portMAX_DELAY);
 }
 
+/* private functions */
+__inline static
+portBASE_TYPE ipc_controller_send_cmd(msg_controller_cmd_t cmd)
+{
+  msg_t msg;
+  msg.head.id = msg_id_controller_cmd;
+  msg.data.controller_cmd = cmd;
+
+  assert(ipc_controller);
+  return xQueueSendToBack(ipc_controller, &msg, portMAX_DELAY);
+}

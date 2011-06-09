@@ -11,12 +11,10 @@
 #include "stm32f10x_adc.h"
 #include "api_controller.h"
 
-
-
-int samplerate = 50;
+int samplerate = 50;  //FIX!
 OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
 
-int setSampleRate(int rate, oscilloscope_input_t channel){
+portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel){
 	int cntr = 0;
  	while(cntr < NUMBER_OF_CHANNELS){
 		if(oChan[cntr].inputChannel == channel)
@@ -25,7 +23,6 @@ int setSampleRate(int rate, oscilloscope_input_t channel){
  	}
  	return pdTRUE;;
 } 
-
 
 int getSampleRate(oscilloscope_input_t channel){
 	int cntr = 0;
@@ -37,7 +34,7 @@ int getSampleRate(oscilloscope_input_t channel){
  	return -1;
 } 
 
-int setSubscribe(int subscribe, oscilloscope_input_t channel){
+portBASE_TYPE setSubscribe(int subscribe, oscilloscope_input_t channel){
 	
 	int cntr = 0;
 	while(cntr < NUMBER_OF_CHANNELS){
@@ -93,37 +90,18 @@ void measureTask (void* params) {
 	packetCounter = 0;
 
 	for(;;){
-
-
-
-	xLastWakeTime = xTaskGetTickCount();
-     
-
-	
-	  
-	 for (i = 0; i < NUMBER_OF_CHANNELS;i++){
+		xLastWakeTime = xTaskGetTickCount();
+		for (i = 0; i < NUMBER_OF_CHANNELS;i++){
 			setSubscribe(1, oChan[i].inputChannel);  //Should be set by value from ipc FIX
 			setSampleRate(samplerate, oChan[i].inputChannel); //Should be set by value from ipc FIX
-		
-			
-			
 			adc_value = readChannel(oChan[i]);
 			//printf("%.2f ", voltageConversion(adc_value));
-
 			ipc_controller_send_data(oChan[i].inputChannel,adc_value,packetCounter);
-			 // assert(0);
-
-
+			 // assert(0);  DO something about failure in sending message?
+			packetCounter++;
 		}
-
-
-		 packetCounter++;
-		
-		//printf("xLastWakeTime %d \n", xLastWakeTime);
-		
-
+	//printf("xLastWakeTime %d \n", xLastWakeTime);
 	vTaskDelayUntil( &xLastWakeTime, xFrequency );	
-
 	}
 }
 
@@ -154,8 +132,8 @@ void measureTask (void* params) {
   while(ADC_GetCalibrationStatus(ADC1));
 
 
- if(NUMBER_OF_CHANNELS != 2)
-		assert(0); //this need to be generalized if other amount of chans is needed;
+ if(NUMBER_OF_CHANNELS != 2){
+		assert(0);} //this need to be generalized if other amount of chans is needed;
 									   
 	 oChan[0].ADC=ADC1;
 	 oChan[0].ADC_Channel=ADC_Channel_7;
@@ -168,11 +146,5 @@ void measureTask (void* params) {
      oChan[1].subscribed=	0;
 	 oChan[1].inputChannel = input_channel1;
      oChan[1].rate=50;
-
-  
    //xTaskCreate(measureTask,"",100, NULL, 1, NULL);
-   
-
-  
-
 }

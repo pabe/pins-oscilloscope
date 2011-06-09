@@ -16,9 +16,9 @@ typedef struct {
 
 void measureInit(void);
 void measureTask (void* params);
-int setSampleRate(int rate, oscilloscope_input_t channel);
+portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel);
 int getSampleRate(oscilloscope_input_t channel);
-int setSubscribe(int subscribe, oscilloscope_input_t channel);
+portBASE_TYPE setSubscribe(int subscribe, oscilloscope_input_t channel);
 int getSubscribe(oscilloscope_input_t channel);
 
 #endif /* __MEASURE_H_ */

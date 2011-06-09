@@ -41,10 +41,11 @@ void task_input_gpio(void *p)
     if(pin_state^new_pin_state)
     {
       /* TODO: we should fix a debouncer */
-
       static int i = 0;
-      i++;
-      switch(i)
+		// Bounce?
+		vTaskDelay(50/portTICK_RATE_MS);
+		if(new_pin_state == GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9))
+      switch(++i)
       {
         case 1:
           ipc_controller_mode_set(oscilloscope_mode_oscilloscope);

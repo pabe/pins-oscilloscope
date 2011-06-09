@@ -65,6 +65,7 @@ void task_watchdog(void *p)
     else
     {
       task_watchdog_signal_error();
+	  printf("Foo! Watchdog dead!");
       vTaskDelete(NULL);
     }
   }

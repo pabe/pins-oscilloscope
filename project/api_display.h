@@ -16,5 +16,6 @@ typedef enum msg_display_cmd
 extern xQueueHandle ipc_display;
 
 portBASE_TYPE ipc_display_toggle_channel(oscilloscope_input_t ch);
+portBASE_TYPE ipc_display_button_highlight(int button);
 
 #endif /* __API_DISPLAY__H_ */

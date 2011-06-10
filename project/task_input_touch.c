@@ -18,6 +18,8 @@
 #include "task_input_touch.h"
 #include "task_watchdog.h"
 
+#define WIDTH 320 
+
 /* public variables */
 
 /* private variables */
@@ -37,14 +39,14 @@
 typedef struct {
   u16 lower, upper, left, right;
   void *data;
-  void (*callback)(u16 x, u16 y, u16 pressure, void *data);
+  void (*callback)(/*u16 x, u16 y, u16 pressure,*/ void *data);
 } TSCallback;
 
 static TSCallback callbacks[16];
 static u8 callbackNum = 0;
 
 void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
-                        void (*callback)(u16 x, u16 y, u16 pressure, void *data),
+                        void (*callback)(/*u16 x, u16 y, u16 pressure,*/ void *data),
 						void *data) {
   callbacks[callbackNum].lower    = lower;
   callbacks[callbackNum].upper    = upper;
@@ -54,6 +56,23 @@ void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
   callbacks[callbackNum].data     = data;
   callbackNum++;
 }
+
+static void printButton(void *data){
+  u16 i;
+  i = (int)data;
+  printf("I am button:%d\n", i );
+}
+
+static void setupButtons(void) { 
+  u16 i; 
+  //buttonQueue = xQueueCreate(4, sizeof(u16)); 
+   
+  for (i = 0; i < 3; ++i) { 
+    GLCD_drawRect(30 + 60*i, 30, 40, 40); 
+	registerTSCallback(WIDTH - 30 - 40, WIDTH - 30, 30 + 60*i + 40, 30 + 60*i, 
+	                   &printButton, (void*)i); 
+  } 
+} 
 
 /* public functions */
 void task_input_touch(void *p)
@@ -65,6 +84,7 @@ void task_input_touch(void *p)
 
   /* subscribe to mode variable in the controller, returns pd(TRUE|FALSE) */
   ipc_controller_subscribe(ipc_input_touch, ipc_controller_variable_mode);
+  setupButtons();
 
   while(1)
   {
@@ -88,8 +108,8 @@ void task_input_touch(void *p)
 		    callbacks[i].right >= ts_state->X &&
 		    callbacks[i].lower >= ts_state->Y &&
 		    callbacks[i].upper <= ts_state->Y)
-		  callbacks[i].callback(ts_state->X, ts_state->Y, ts_state->Z,
-		                        callbacks[i].data);
+		  callbacks[i].callback(/*ts_state->X, ts_state->Y, ts_state->Z,
+					 */callbacks[i].data);
 	  }													
 	  pressed = 1;
 	}

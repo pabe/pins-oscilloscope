@@ -25,6 +25,7 @@ typedef struct
       msg_id_controller_cmd,
       msg_id_controller_subscribe,
       msg_id_display_toggle_channel,
+      msg_id_display_button_highlight,
       msg_id_watchdog_cmd,
       msg_id_measure_subscribe,
       msg_id_subscribe_mode
@@ -40,12 +41,6 @@ typedef struct
 
       controller_cmd_toggle_time_axis_increase,
 	  controller_cmd_toggle_time_axis_decrease,
-	  controller_cmd_pressed_time_axis_increase,
-	  controller_cmd_pressed_time_axis_decrease,
-	  controller_cmd_pressed_channel0_subbscribe,
-	  controller_cmd_pressed_channel1_subbscribe,
-	  controller_cmd_pressed_mode,
-	  controller_cmd_pressed_freeze_screen
     } controller_cmd;
 
     struct msg_controller_subscribe
@@ -74,6 +69,8 @@ typedef struct
       } variable;
       ipc_addr_t subscriber;
     } measure_subscribe;
+
+    int msg_display_button_highlight;
 
     oscilloscope_mode_t subscribe_mode;
   } data;

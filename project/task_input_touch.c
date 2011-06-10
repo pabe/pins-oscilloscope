@@ -2,6 +2,9 @@
  * Input driver for touchscreen.
  */
 
+
+
+
 #include <stdio.h>
 
 /* Firmware */
@@ -17,6 +20,12 @@
 #include "api_controller.h"
 #include "task_input_touch.h"
 #include "task_watchdog.h"
+#include "oscilloscope.h"
+
+ /*--- ONLY for testing purposes remove for release Drawing in this task---*/
+#include "semphr.h"
+
+ /*-------------------------------------*/
 
 #define WIDTH 320 
 
@@ -39,14 +48,14 @@
 typedef struct {
   u16 lower, upper, left, right;
   void *data;
-  void (*callback)(/*u16 x, u16 y, u16 pressure,*/ void *data);
+  void (*callback)(void *data);
 } TSCallback;
 
 static TSCallback callbacks[16];
 static u8 callbackNum = 0;
 
 void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
-                        void (*callback)(/*u16 x, u16 y, u16 pressure,*/ void *data),
+                        void (*callback)(void *data),
 						void *data) {
   callbacks[callbackNum].lower    = lower;
   callbacks[callbackNum].upper    = upper;
@@ -58,28 +67,30 @@ void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
 }
 
 static void printButton(void *data){
-  u16 i;
-  i = (int)data;
-  printf("I am button:%d\n", i );
+  u16 button;
+  button = (int)data;
+  printf("I am button:%d ", button);
 }
 
 static void setupButtons(void) { 
+  extern xSemaphoreHandle lcdLock; 
   u16 i; 
-  //buttonQueue = xQueueCreate(4, sizeof(u16)); 
-   
+  xSemaphoreTake(lcdLock, portMAX_DELAY);
   for (i = 0; i < 3; ++i) { 
     GLCD_drawRect(30 + 60*i, 30, 40, 40); 
 	registerTSCallback(WIDTH - 30 - 40, WIDTH - 30, 30 + 60*i + 40, 30 + 60*i, 
 	                   &printButton, (void*)i); 
-  } 
+  }
+  xSemaphoreGive(lcdLock); 
 } 
 
 /* public functions */
 void task_input_touch(void *p)
 {
   TS_STATE *ts_state;
-  u8 pressed = 0;
-  u8 i;
+  static oscilloscope_mode_t mode;
+  static u8 pressed = 0;
+  static u8 i;
   portTickType timeout = CFG_TASK_INPUT_TOUCH__POLLING_PERIOD;
 
   /* subscribe to mode variable in the controller, returns pd(TRUE|FALSE) */
@@ -108,15 +119,14 @@ void task_input_touch(void *p)
 		    callbacks[i].right >= ts_state->X &&
 		    callbacks[i].lower >= ts_state->Y &&
 		    callbacks[i].upper <= ts_state->Y){
-		       callbacks[i].callback(/*ts_state->X, ts_state->Y, ts_state->Z,
-					 */callbacks[i].data);
+		       callbacks[i].callback(callbacks[i].data);
 					 }
 	  }													
 	  pressed = 1;
 	}
 
     if (ts_state->TouchDetected) {
-	  printf("%d,%d,%d ", ts_state->X, ts_state->Y, ts_state->Z);
+	  //printf("%d,%d,%d ", ts_state->X, ts_state->Y, ts_state->Z);
 	}
 
 
@@ -126,7 +136,9 @@ void task_input_touch(void *p)
       switch(msg.head.id)
       {
         case msg_id_subscribe_mode:
-          printf("| MODE: %i |", msg.data.subscribe_mode);
+          //printf("| MODE: %i |", msg.data.subscribe_mode);
+		  mode = msg.data.subscribe_mode;
+		  printf("mymode:%d ", mode);
           break;
 
         default:

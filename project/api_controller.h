@@ -40,11 +40,6 @@ portBASE_TYPE ipc_controller_toggle_channel0_subbscribe(void);
 portBASE_TYPE ipc_controller_toggle_channel1_subbscribe(void);
 portBASE_TYPE ipc_controller_toggle_freeze_screen(void);
 
-/* TODO should maybe be in a diffrent api... */
-portBASE_TYPE ipc_controller_send_data(
-    oscilloscope_input_t intput,
-    uint16_t data,
-    int timestamp);
 
 
 /* returns 'subscribe_mode' messages */

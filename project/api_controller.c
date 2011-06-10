@@ -68,14 +68,6 @@ portBASE_TYPE ipc_controller_toggle_freeze_screen(void)
   return pdFALSE;
 }
 
-portBASE_TYPE ipc_controller_send_data(
-    oscilloscope_input_t intput,
-    uint16_t data,
-    int timestamp)
-{
-  return pdFALSE;
-}
-
 portBASE_TYPE ipc_controller_subscribe(
     ipc_addr_t subscriber,
     msg_controller_subscribe_variable_t var)

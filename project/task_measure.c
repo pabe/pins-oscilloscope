@@ -19,11 +19,16 @@ OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
 
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *cmd);
+portBASE_TYPE send_data(
+    oscilloscope_input_t ch,
+    uint16_t data,
+    int timestamp);
 
 /* private variables */
+static subscribe_msg_t data[NUMBER_OF_CHANNELS];
 static const ipc_loop_t msg_handle_table[] =
 {
-  { msg_id_measure_subscribe, handle_msg_subscribe } /* temp, will kill ipc_get()! */
+  { msg_id_measure_subscribe, handle_msg_subscribe }
 };
 
 portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel){
@@ -98,16 +103,37 @@ void measureTask (void* params)
 	int  packetCounter, i;
 	uint16_t adc_value;
 	packetCounter = 0;
+  
+  /* subscribe related initializing */
+  for(i=0; i<sizeof(data)/sizeof(data[0]); i++)
+  {
+    subscribe_init(data + i, msg_id_subscribe_measure_data);
+    data[i].msg.data.subscribe_measure_data.data = 0;
+    data[i].msg.data.subscribe_measure_data.timestamp = 0;
+  }
+
+  /* this needs manual update */
+  assert(sizeof(data)/sizeof(data[0]) == 2);
+
+  data[0].msg.data.subscribe_measure_data.ch = input_channel0;
+  data[1].msg.data.subscribe_measure_data.ch = input_channel1;
+
+      printf("|b %i|",herzToTicks(samplerate));
   while(1)
   {
     if(pdTRUE == ipc_get(
           ipc_measure,
-          herzToTicks(samplerate),
+          (500 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
           msg_handle_table,
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
+      static uint16_t fakedata = 0;
+      static int fakedata_counter = 0;
+      send_data(input_channel0,fakedata,fakedata_counter);
+      fakedata++;
+      fakedata_counter+=2;
 
-
+#if 0
 		for (i = 0; i < NUMBER_OF_CHANNELS;i++){
 			setSubscribe(1, oChan[i].inputChannel);  //Should be set by value from ipc FIX
 			setSampleRate(samplerate, oChan[i].inputChannel); //Should be set by value from ipc FIX
@@ -116,11 +142,12 @@ void measureTask (void* params)
 
 				adc_value = readChannel(oChan[i]);
 				//printf("%.2f ", voltageConversion(adc_value));
-				ipc_controller_send_data(oChan[i].inputChannel,adc_value,packetCounter);
+				send_data(oChan[i].inputChannel,adc_value,packetCounter);
 			 	// assert(0);  DO something about failure in sending message?
 				packetCounter++;
 			}
 		}
+#endif
 
 
 
@@ -135,9 +162,51 @@ void measureTask (void* params)
 }
 
 /* private functions */
-static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *data)
+static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
 {
-  /* TODO: Write me! */
+  switch(msg->measure_subscribe.variable)
+  {
+    case ipc_measure_variable_data_ch0:
+      if(pdFALSE == subscribe_add(data+0, msg->measure_subscribe.subscriber))
+      {
+        /* TODO: Output error mesg? */
+        return pdFALSE;
+      }
+      break;
+
+    case ipc_measure_variable_data_ch1:
+      if(pdFALSE == subscribe_add(data+1, msg->measure_subscribe.subscriber))
+      {
+        /* TODO: Output error mesg? */
+        return pdFALSE;
+      }
+      break;
+
+    default:
+      return pdFALSE;
+  }
+  return pdTRUE;
+}
+
+portBASE_TYPE send_data(
+    oscilloscope_input_t ch,
+    uint16_t value,
+    int timestamp)
+{
+  data[ch].msg.data.subscribe_measure_data.data = value;
+  data[ch].msg.data.subscribe_measure_data.timestamp = timestamp;
+  subscribe_execute(data + ch);
+#if 0
+      if(mode.msg.data.subscribe_mode == oscilloscope_mode_multimeter)
+      {
+        mode.msg.data.subscribe_mode = oscilloscope_mode_oscilloscope;
+      }
+      else
+      {
+        mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
+      }
+      subscribe_execute(&mode);
+#endif
   return pdTRUE;
 }
 

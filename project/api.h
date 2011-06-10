@@ -7,6 +7,7 @@
 #ifndef __API__H_
 #define __API__H_
 
+#include <stdint.h>
 #include "config.h"
 #include "oscilloscope.h"
 
@@ -28,7 +29,8 @@ typedef struct
       msg_id_display_button_highlight,
       msg_id_watchdog_cmd,
       msg_id_measure_subscribe,
-      msg_id_subscribe_mode
+      msg_id_subscribe_mode,
+      msg_id_subscribe_measure_data
     } id;
   } head;
   union msg_data
@@ -73,8 +75,16 @@ typedef struct
     int msg_display_button_highlight;
 
     oscilloscope_mode_t subscribe_mode;
+    
+    struct msg_subscribe_measure_data
+    {
+      oscilloscope_input_t ch;
+      int timestamp;
+      uint16_t data;
+    } subscribe_measure_data;
   } data;
 } msg_t;
+
 typedef enum  msg_id   msg_id_t;
 typedef union msg_data msg_data_t;
 

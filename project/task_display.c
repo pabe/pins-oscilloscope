@@ -1,6 +1,7 @@
 
 #include "api_controller.h"
 #include "api_display.h"
+#include "api_measure.h"
 #include "task_display.h"
 #include "task_watchdog.h"
 #include "oscilloscope.h"
@@ -11,6 +12,7 @@ portBASE_TYPE display_buffer_index[NUMBER_OF_CHANNELS] = {0};
 
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
+static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data);
 
 /* private variables */
@@ -18,12 +20,15 @@ static oscilloscope_mode_t display_mode = oscilloscope_mode_oscilloscope;
 static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_subscribe_mode,         handle_msg_subscribe_mode },
+  { msg_id_subscribe_measure_data, handle_msg_subscribe_measure_data },
   { msg_id_display_toggle_channel, handle_msg_toggle_channel }
 };
 
 void task_display(void *args)
 {
   ipc_controller_subscribe(ipc_display, ipc_controller_variable_mode);
+  ipc_measure_subscribe(ipc_display, ipc_measure_variable_data_ch0);
+  ipc_measure_subscribe(ipc_display, ipc_measure_variable_data_ch1);
 
 	while(1)
   {
@@ -66,6 +71,25 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 
     case oscilloscope_mode_multimeter:
       printf("|LOL1)");
+      break;
+
+    default:
+      return pdFALSE;
+  }
+
+  return pdTRUE;
+}
+
+static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
+{
+  switch(data->subscribe_measure_data.ch)
+  {
+    case input_channel0:
+      printf("|BAR0|");
+      break;
+
+    case input_channel1:
+      printf("|BAR1)");
       break;
 
     default:

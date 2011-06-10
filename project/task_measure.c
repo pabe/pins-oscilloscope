@@ -21,9 +21,10 @@ OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *cmd);
 
 /* private variables */
+static subscribe_msg_t data[2];
 static const ipc_loop_t msg_handle_table[] =
 {
-  { msg_id_measure_subscribe, handle_msg_subscribe } /* temp, will kill ipc_get()! */
+  { msg_id_measure_subscribe, handle_msg_subscribe }
 };
 
 portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel){
@@ -98,6 +99,21 @@ void measureTask (void* params)
 	int  packetCounter, i;
 	uint16_t adc_value;
 	packetCounter = 0;
+  
+  /* subscribe related initializing */
+  for(i=0; i<sizeof(data)/sizeof(data[0]); i++)
+  {
+    subscribe_init(data + i, msg_id_subscribe_measure_data);
+    data[i].msg.data.subscribe_measure_data.data = 0;
+    data[i].msg.data.subscribe_measure_data.timestamp = 0;
+  }
+
+  /* this needs manual update */
+  assert(sizeof(data)/sizeof(data[0]) == 2);
+
+  data[0].msg.data.subscribe_measure_data.ch = input_channel0;
+  data[1].msg.data.subscribe_measure_data.ch = input_channel1;
+
   while(1)
   {
     if(pdTRUE == ipc_get(
@@ -135,9 +151,29 @@ void measureTask (void* params)
 }
 
 /* private functions */
-static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *data)
+static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
 {
-  /* TODO: Write me! */
+  switch(msg->measure_subscribe.variable)
+  {
+    case ipc_measure_variable_data_ch0:
+      if(pdFALSE == subscribe_add(data+0, msg->measure_subscribe.subscriber))
+      {
+        /* TODO: Output error mesg? */
+        return pdFALSE;
+      }
+      break;
+
+    case ipc_measure_variable_data_ch1:
+      if(pdFALSE == subscribe_add(data+1, msg->measure_subscribe.subscriber))
+      {
+        /* TODO: Output error mesg? */
+        return pdFALSE;
+      }
+      break;
+
+    default:
+      return pdFALSE;
+  }
   return pdTRUE;
 }
 

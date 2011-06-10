@@ -21,6 +21,7 @@ void task_display(void *args);
 void display_redraw(void);
 void display_sample(portBASE_TYPE channel, portBASE_TYPE sample);
 void display_show_analog(portBASE_TYPE latitude, portBASE_TYPE longitude);
+void display_new_measure(portBASE_TYPE channel, portBASE_TYPE sample, portBASE_TYPE timestamp);
 
 extern portBASE_TYPE display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS]; //This goes to the storage module eventualy
 extern portBASE_TYPE display_buffer_index[]; //This goes to the storage module eventualy

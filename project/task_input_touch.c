@@ -107,9 +107,10 @@ void task_input_touch(void *p)
 		if (callbacks[i].left  <= ts_state->X &&
 		    callbacks[i].right >= ts_state->X &&
 		    callbacks[i].lower >= ts_state->Y &&
-		    callbacks[i].upper <= ts_state->Y)
-		  callbacks[i].callback(/*ts_state->X, ts_state->Y, ts_state->Z,
+		    callbacks[i].upper <= ts_state->Y){
+		       callbacks[i].callback(/*ts_state->X, ts_state->Y, ts_state->Z,
 					 */callbacks[i].data);
+					 }
 	  }													
 	  pressed = 1;
 	}

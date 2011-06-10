@@ -436,6 +436,11 @@
               <FileType>1</FileType>
               <FilePath>.\Firmware\src\stm32f10x_rcc.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Firmware\src\stm32f10x_tim.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

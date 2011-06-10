@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_tim.h"
 #include "stm32f10x_rcc.h"
+#include "assert.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Driver
   * @{

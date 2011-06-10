@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#define USE_TIMER 1
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -8,6 +8,11 @@
 #include "queue.h"
 #include "stm3210c_eval_ioe.h"
 #include "stm32f10x_adc.h"
+
+#if USE_TIMER
+#include "stm32f10x_tim.h"
+//#include "stm32f10x_rcc.h"
+#endif
 
 #include "api_controller.h"
 #include "api_measure.h"
@@ -252,9 +257,8 @@ void measureTaskOld (void* params) {
 	}
 }
 #endif
-  void measureInit(void) {
-  //void measureInit(unsigned portBASE_TYPE uxPriority) {
- 
+
+void ADCInit(OscilloscopeChannel oChan){
  /* ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;	 // no dual ADC
   ADC_InitStructure.ADC_ScanConvMode = ENABLE;           // read from the channel(s) configured below
   ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;	 // one-shot conversion
@@ -266,17 +270,49 @@ void measureTaskOld (void* params) {
   ADC_Init(ADC1, &ADC_InitStructure);*/
 
   /* Power up the ADC */
-  ADC_Cmd(ADC1, ENABLE);
+  ADC_Cmd(oChan.ADC, ENABLE);
 
-  /* Enable ADC1 reset calibaration register */   
-  ADC_ResetCalibration(ADC1);
+  /* Enable ADC reset calibaration register */   
+  ADC_ResetCalibration(oChan.ADC);
   /* Check the end of ADC1 reset calibration register */
-  while(ADC_GetResetCalibrationStatus(ADC1));
+  while(ADC_GetResetCalibrationStatus(oChan.ADC));
 
-  /* Start ADC1 calibaration */
-  ADC_StartCalibration(ADC1);
-  /* Check the end of ADC1 calibration */
-  while(ADC_GetCalibrationStatus(ADC1));
+  /* Start ADC calibaration */
+  ADC_StartCalibration(oChan.ADC);
+  /* Check the end of ADC calibration */
+  while(ADC_GetCalibrationStatus(oChan.ADC));
+
+
+}
+#if USE_TIMER
+void TimerInit(void){
+TIM_TimeBaseInitTypeDef   TIM_TimeBaseStructure;
+TIM_OCInitTypeDef         TIM_OCInitStructure;
+
+  /* TIM1 configuration ------------------------------------------------------*/
+  /* Time Base configuration */
+  TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
+  TIM_TimeBaseStructure.TIM_Period = (unsigned portSHORT)0x0FFF;;
+  TIM_TimeBaseStructure.TIM_Prescaler = 719;
+  TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+  TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+  TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
+  /* Channel1 Configuration in PWM mode */
+  TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; 
+  TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
+  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+  TIM_OC1Init(TIM1, &TIM_OCInitStructure);
+
+  /* Enable TIM1 */  
+  TIM_Cmd(TIM1, ENABLE);
+  /* Enable TIM1 outputs */
+  TIM_CtrlPWMOutputs(TIM1, ENABLE);
+
+}
+#endif
+
+
+  void measureInit(void) {
 
 
  if(NUMBER_OF_CHANNELS != 2){
@@ -295,5 +331,14 @@ void measureTaskOld (void* params) {
 	 oChan[1].inputChannel = input_channel1;
      oChan[1].rate=50;
 	 oChan[1].active=1;
+
+  
+ 	 ADCInit(oChan[0]);
+#if USE_TIMER
+	 TimerInit();
+#endif
+
+
+
 
 }

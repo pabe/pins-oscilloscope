@@ -23,7 +23,7 @@
 #include "oscilloscope.h"
 
  /*--- ONLY for testing purposes remove for release Drawing in this task---*/
-#include "semphr.h"
+#include "semphr.h"	 //FIXME
 
  /*-------------------------------------*/
 
@@ -32,7 +32,7 @@
 /* public variables */
 
 /* private variables */
-
+static oscilloscope_mode_t mode;
 /* private functions */
 /*-----------------------------------------------------------*/
 
@@ -67,13 +67,14 @@ void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
 }
 
 static void printButton(void *data){
+
   u16 button;
   button = (int)data;
-  printf("I am button:%d ", button);
+  printf("I am button:%d Mode:%d", button, mode);
 }
 
 static void setupButtons(void) { 
-  extern xSemaphoreHandle lcdLock; 
+  extern xSemaphoreHandle lcdLock; //FIXME
   u16 i; 
   xSemaphoreTake(lcdLock, portMAX_DELAY);
   for (i = 0; i < 3; ++i) { 
@@ -81,14 +82,13 @@ static void setupButtons(void) {
 	registerTSCallback(WIDTH - 30 - 40, WIDTH - 30, 30 + 60*i + 40, 30 + 60*i, 
 	                   &printButton, (void*)i); 
   }
-  xSemaphoreGive(lcdLock); 
+  xSemaphoreGive(lcdLock); //FIXME
 } 
 
 /* public functions */
 void task_input_touch(void *p)
 {
   TS_STATE *ts_state;
-  static oscilloscope_mode_t mode;
   static u8 pressed = 0;
   static u8 i;
   portTickType timeout = CFG_TASK_INPUT_TOUCH__POLLING_PERIOD;

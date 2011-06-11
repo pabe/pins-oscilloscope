@@ -8,6 +8,7 @@
 
 portBASE_TYPE display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS] = {0};
 portBASE_TYPE display_buffer_index[NUMBER_OF_CHANNELS] = {0};
+portBASE_TYPE display_buffer_enable[NUMBER_OF_CHANNELS] = {0};
 
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
@@ -48,20 +49,13 @@ void task_display(void *args)
     }
   }
 }
-#if 0 /* orig code */
-// Spin, read IPC, handle IPC
-int i=0;
-xSemaphoreTake(lcdLock, portMAX_DELAY);
-display_sample(0, i);
-display_sample(1, (i+2048) % 4096);
-i = (i + 10) % 4096;
-xSemaphoreGive(lcdLock);
-vTaskDelay(1/portTICK_RATE_MS);
-#endif
 
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 {
+	display_mode = data->subscribe_mode;
+	display_redraw();
+#if 0
   switch(data->subscribe_mode)
   {
     case oscilloscope_mode_oscilloscope:
@@ -75,6 +69,7 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
     default:
       return pdFALSE;
   }
+#endif
 
   return pdTRUE;
 }
@@ -84,11 +79,11 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
   switch(data->subscribe_measure_data.ch)
   {
     case input_channel0:
-      printf("|BAR0|");
+		display_new_measure(0, data->subscribe_measure_data.data, data->subscribe_measure_data.timestamp);
       break;
 
     case input_channel1:
-      printf("|BAR1)");
+		display_new_measure(1, data->subscribe_measure_data.data, data->subscribe_measure_data.timestamp);
       break;
 
     default:
@@ -103,10 +98,11 @@ static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data)
   switch(data->msg_display_toggle_channel)
   {
     case input_channel0:
-    case input_channel1:
-      assert(0);
+		display_buffer_enable[0] ^= 1;
       break;
-
+    case input_channel1:
+		display_buffer_enable[1] ^= 1;
+      break;
     default:
       return pdFALSE;
   }
@@ -138,6 +134,26 @@ void display_redraw(void) {
 			break;
 	}
 }
+
+void display_new_measure(portBASE_TYPE channel, portBASE_TYPE sample, portBASE_TYPE timestamp) {
+	switch(display_mode) {
+		case oscilloscope_mode_oscilloscope: 
+			do {
+				if((display_buffer_index[channel] +1) == timestamp)
+					display_sample(channel, sample);
+				else
+					display_sample(channel, 0);
+			} while(++display_buffer_index[channel] != timestamp);
+			break;
+		case oscilloscope_mode_multimeter: 
+			display_sample(channel, sample);
+			break;
+		default:
+			assert(0);
+			break;
+	}
+}
+
 
 // New sample to display, regardless of mode
 void display_sample(portBASE_TYPE channel, portBASE_TYPE sample) {

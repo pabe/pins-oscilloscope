@@ -197,7 +197,7 @@ void display_show_analog(portBASE_TYPE x, portBASE_TYPE y) {
 	// +-----------+
 	portBASE_TYPE disx = (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT) - y / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
 	portBASE_TYPE disy = DISPLAY_X_RES - x;
-	xSemaphoreTake(lcdLock);
+	xSemaphoreTake(lcdLock, portMAX_DELAY);
 	GLCD_putPixel(disx,disy);
 	xSemaphoreGive(lcdLock);
 }

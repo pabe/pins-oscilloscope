@@ -30,6 +30,7 @@ portBASE_TYPE send_data(
     int timestamp);
 
 /* private variables */
+static int testIntForISR;
 static subscribe_msg_t data[NUMBER_OF_CHANNELS];
 static subscribe_msg_t rate[NUMBER_OF_CHANNELS];
 static const ipc_loop_t msg_handle_table[] =
@@ -108,7 +109,11 @@ void measureTask (void* params)
 {
 	int  packetCounter, i;
 	uint16_t adc_value;
+	int testIntForISROld;
 	packetCounter = 0;
+
+	testIntForISR = 0;
+	
   
   /* subscribe related initializing */
   assert(sizeof(data)/sizeof(data[0]) == sizeof(rate)/sizeof(rate[0]));
@@ -131,6 +136,10 @@ void measureTask (void* params)
 
   while(1)
   {
+	//if (testIntForISROld != testIntForISR)
+	printf("%d", testIntForISR);
+	testIntForISROld = testIntForISR;
+
     if(pdTRUE == ipc_get(
           ipc_measure,
           (5000 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
@@ -285,6 +294,22 @@ void ADCInit(OscilloscopeChannel oChan){
 
 }
 #if USE_TIMER
+
+
+void vTimer2IntHandler(void) {
+  portBASE_TYPE higherPrio;
+
+
+
+  // Clear pending-bit of interrupt
+  TIM_ClearITPendingBit( TIM2, TIM_IT_Update );
+
+  // FreeRTOS macro to signal the end of ISR
+  portEND_SWITCHING_ISR(higherPrio);
+}
+
+
+
 void TimerInit(void){
 TIM_TimeBaseInitTypeDef   TIM_TimeBaseStructure;
 TIM_OCInitTypeDef         TIM_OCInitStructure;
@@ -293,28 +318,28 @@ TIM_OCInitTypeDef         TIM_OCInitStructure;
   /* TIM1 configuration ------------------------------------------------------*/
   /* Time Base configuration */
   TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
-  TIM_TimeBaseStructure.TIM_Period = (unsigned portSHORT)0x0FFF;;
+  TIM_TimeBaseStructure.TIM_Period = (unsigned portSHORT)0x0FFF;
   TIM_TimeBaseStructure.TIM_Prescaler = 719;
   TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
   /* Channel1 Configuration in PWM mode */
-  TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; 
+  /*TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; 
   TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
   TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-  TIM_OC1Init(TIM1, &TIM_OCInitStructure);
+  TIM_OC1Init(TIM1, &TIM_OCInitStructure);	 */
 
   /* Enable TIM1 */  
   TIM_Cmd(TIM1, ENABLE);
   /* Enable TIM1 outputs */
-  TIM_CtrlPWMOutputs(TIM1, ENABLE);
+  //TIM_CtrlPWMOutputs(TIM1, ENABLE);
 
 }
 #endif
 
 
   void measureInit(void) {
-prvSetupHardware();
+//
 
  if(NUMBER_OF_CHANNELS != 2){
 		assert(0);} //this need to be generalized if other amount of chans is needed;

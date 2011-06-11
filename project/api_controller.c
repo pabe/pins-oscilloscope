@@ -57,12 +57,16 @@ portBASE_TYPE ipc_controller_subscribe(
     msg_controller_subscribe_variable_t var)
 {
   msg_t msg;
+  portBASE_TYPE ret;
 
   msg.head.id = msg_id_controller_subscribe;
   msg.data.controller_subscribe.variable = var;
   msg.data.controller_subscribe.subscriber = subscriber;
 
-  return xQueueSendToBack(ipc_controller, &msg, portMAX_DELAY);
+  assert(ipc_controller);
+  ret = xQueueSendToBack(ipc_controller, &msg, CONFIG_IPC_WAIT);
+  assert(ret == pdTRUE);
+  return ret;
 }
 
 /* private functions */
@@ -70,9 +74,13 @@ __inline static
 portBASE_TYPE ipc_controller_send_cmd(msg_controller_cmd_t cmd)
 {
   msg_t msg;
+  portBASE_TYPE ret;
+
   msg.head.id = msg_id_controller_cmd;
   msg.data.controller_cmd = cmd;
 
   assert(ipc_controller);
-  return xQueueSendToBack(ipc_controller, &msg, portMAX_DELAY);
+  ret = xQueueSendToBack(ipc_controller, &msg, CONFIG_IPC_WAIT);
+  assert(ret == pdTRUE);
+  return ret;
 }

@@ -56,7 +56,10 @@ portBASE_TYPE ipc_get(
       if(handlers[i].id == msg.head.id)
       {
         if(pdFALSE == handlers[i].handler(msg.head.id, &msg.data))
+        {
+          assert(0);
           return pdFALSE;
+        }
         break;
       }
     }
@@ -83,11 +86,13 @@ void subscribe_execute(subscribe_msg_t *v)
 
   for(i=0; i<sizeof(v->queues)/sizeof(v->queues[0]); i++)
   {
+    portBASE_TYPE ret;
     if(!v->queues[i])
       break;
 
     /* ignore fails */
-    xQueueSendToBack(v->queues[i], &v->msg, portMAX_DELAY);
+    ret = xQueueSendToBack(v->queues[i], &v->msg, CONFIG_IPC_WAIT);
+    assert(ret == pdTRUE);
   }
 }
 
@@ -120,5 +125,6 @@ static portBASE_TYPE ipc_init_module(xQueueHandle* h, unsigned portBASE_TYPE uxQ
     return pdFALSE;
 
   *h = xQueueCreate(uxQueueLength, sizeof(msg_t));
+  assert(*h);
   return *h ? pdTRUE : pdFALSE;
 }

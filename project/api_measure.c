@@ -12,10 +12,14 @@ portBASE_TYPE ipc_measure_subscribe(
     msg_measure_subscribe_variable_t var)
 {
   msg_t msg;
+  portBASE_TYPE ret;
 
   msg.head.id = msg_id_measure_subscribe;
   msg.data.measure_subscribe.variable = var;
   msg.data.measure_subscribe.subscriber = subscriber;
 
-  return xQueueSendToBack(ipc_measure, &msg, portMAX_DELAY);
+  assert(ipc_measure);
+  ret = xQueueSendToBack(ipc_measure, &msg, CONFIG_IPC_WAIT);
+  assert(ret == pdTRUE);
+  return ret;
 }

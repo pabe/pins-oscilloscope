@@ -13,6 +13,7 @@ portBASE_TYPE display_buffer_enable[NUMBER_OF_CHANNELS] = {0};
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data);
+static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data);
 
 /* private variables */
@@ -21,6 +22,7 @@ static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_subscribe_mode,         handle_msg_subscribe_mode },
   { msg_id_subscribe_measure_data, handle_msg_subscribe_measure_data },
+  { msg_id_display_cmd,            handle_msg_cmd },
   { msg_id_display_toggle_channel, handle_msg_toggle_channel }
 };
 
@@ -45,7 +47,7 @@ void task_display(void *args)
     else
     {
       task_watchdog_signal_error();
-       vTaskDelete(NULL);
+      vTaskDelete(NULL);
     }
   }
 }
@@ -93,6 +95,19 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
   return pdTRUE;
 }
 
+static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
+{
+  switch(data->display_cmd)
+  {
+    case display_cmd_toggle_freeze_screen:
+      assert(0);
+      break;
+
+    default:
+      return pdFALSE;
+  }
+  return pdTRUE;
+}
 static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data)
 {
   switch(data->msg_display_toggle_channel)

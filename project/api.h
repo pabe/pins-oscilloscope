@@ -27,6 +27,7 @@ typedef struct
       msg_id_controller_subscribe,
       msg_id_display_toggle_channel,
       msg_id_display_button_highlight,
+      msg_id_display_cmd,
       msg_id_watchdog_cmd,
       msg_id_measure_subscribe,
       msg_id_subscribe_mode,
@@ -55,6 +56,13 @@ typedef struct
     } controller_subscribe;
     
     oscilloscope_input_t msg_display_toggle_channel;
+    
+    int msg_display_button_highlight;
+
+    enum msg_display_cmd
+    {
+      display_cmd_toggle_freeze_screen
+    } display_cmd;
 
     enum msg_watchdog_cmd
     {
@@ -71,8 +79,6 @@ typedef struct
       } variable;
       ipc_addr_t subscriber;
     } measure_subscribe;
-
-    int msg_display_button_highlight;
 
     oscilloscope_mode_t subscribe_mode;
     

@@ -31,19 +31,19 @@ typedef struct
       msg_id_watchdog_cmd,
       msg_id_measure_subscribe,
       msg_id_subscribe_mode,
-      msg_id_subscribe_measure_data
+      msg_id_subscribe_measure_data,
+      msg_id_subscribe_measure_rate
     } id;
   } head;
   union msg_data
   {
     enum msg_controller_cmd
     {
-      controller_cmd_set_mode_oscilloscope,
-      controller_cmd_set_mode_multimeter,
-      controller_cmd_toggle_mode,
-
-      controller_cmd_toggle_time_axis_increase,
-	  controller_cmd_toggle_time_axis_decrease,
+      controller_cmd_mode_set_oscilloscope,
+      controller_cmd_mode_set_multimeter,
+      controller_cmd_mode_do_toggle,
+      controller_cmd_time_axis_increase,
+      controller_cmd_time_axis_decrease
     } controller_cmd;
 
     struct msg_controller_subscribe
@@ -75,7 +75,9 @@ typedef struct
       enum msg_measure_subscribe_variable
       {
         ipc_measure_variable_data_ch0,
-        ipc_measure_variable_data_ch1
+        ipc_measure_variable_data_ch1,
+        ipc_measure_variable_rate_ch0,
+        ipc_measure_variable_rate_ch1
       } variable;
       ipc_addr_t subscriber;
     } measure_subscribe;
@@ -88,6 +90,12 @@ typedef struct
       int timestamp;
       uint16_t data;
     } subscribe_measure_data;
+
+    struct msg_subscribe_measure_rate
+    {
+      oscilloscope_input_t ch;
+      unsigned rate;
+    } subscribe_measure_rate;
   } data;
 } msg_t;
 
@@ -120,7 +128,7 @@ portBASE_TYPE ipc_get(
     const ipc_loop_t handlers[],
     size_t n);
 void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id);
-void subscribe_execute(subscribe_msg_t *v);
+portBASE_TYPE subscribe_execute(subscribe_msg_t *v);
 portBASE_TYPE subscribe_add(subscribe_msg_t *v, ipc_addr_t subscriber);
 
 #endif /* __API__H_ */

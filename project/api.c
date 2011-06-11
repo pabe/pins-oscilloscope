@@ -57,7 +57,6 @@ portBASE_TYPE ipc_get(
       {
         if(pdFALSE == handlers[i].handler(msg.head.id, &msg.data))
         {
-          assert(0);
           return pdFALSE;
         }
         break;
@@ -79,21 +78,23 @@ void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id)
   }
 }
 
-void subscribe_execute(subscribe_msg_t *v)
+portBASE_TYPE subscribe_execute(subscribe_msg_t *v)
 {
   int i;
   assert(v);
 
   for(i=0; i<sizeof(v->queues)/sizeof(v->queues[0]); i++)
   {
-    portBASE_TYPE ret;
     if(!v->queues[i])
       break;
 
     /* ignore fails */
-    ret = xQueueSendToBack(v->queues[i], &v->msg, CONFIG_IPC_WAIT);
-    assert(ret == pdTRUE);
+    if(pdFALSE == xQueueSendToBack(v->queues[i], &v->msg, CONFIG_IPC_WAIT))
+      return pdFALSE;
+
   }
+
+  return pdTRUE;
 }
 
 portBASE_TYPE subscribe_add(subscribe_msg_t *v, ipc_addr_t subscriber)

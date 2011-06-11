@@ -30,19 +30,8 @@ portBASE_TYPE ipc_controller_mode_toggle(void);
 portBASE_TYPE ipc_controller_time_axis_increase(void);
 portBASE_TYPE ipc_controller_time_axis_decrease(void);
 
-/*
- * moved to api_display:
- * ipc_controller_toggle_channel0_subbscribe
- * ipc_controller_toggle_channel1_subbscribe
- */
-
-
-
-
-/* returns 'subscribe_mode' messages */
 portBASE_TYPE ipc_controller_subscribe(
     ipc_addr_t subscriber,
     msg_controller_subscribe_variable_t var);
-
 
 #endif /* __API_CONTROLLER__H_ */

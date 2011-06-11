@@ -26,6 +26,7 @@ portBASE_TYPE send_data(
 
 /* private variables */
 static subscribe_msg_t data[NUMBER_OF_CHANNELS];
+static subscribe_msg_t rate[NUMBER_OF_CHANNELS];
 static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_measure_subscribe, handle_msg_subscribe }
@@ -105,11 +106,14 @@ void measureTask (void* params)
 	packetCounter = 0;
   
   /* subscribe related initializing */
+  assert(sizeof(data)/sizeof(data[0]) == sizeof(rate)/sizeof(rate[0]));
   for(i=0; i<sizeof(data)/sizeof(data[0]); i++)
   {
     subscribe_init(data + i, msg_id_subscribe_measure_data);
+    subscribe_init(rate + i, msg_id_subscribe_measure_rate);
     data[i].msg.data.subscribe_measure_data.data = 0;
     data[i].msg.data.subscribe_measure_data.timestamp = 0;
+    rate[i].msg.data.subscribe_measure_rate.rate = 0;
   }
 
   /* this needs manual update */
@@ -117,6 +121,8 @@ void measureTask (void* params)
 
   data[0].msg.data.subscribe_measure_data.ch = input_channel0;
   data[1].msg.data.subscribe_measure_data.ch = input_channel1;
+  rate[0].msg.data.subscribe_measure_rate.ch = input_channel0;
+  rate[1].msg.data.subscribe_measure_rate.ch = input_channel1;
 
   while(1)
   {
@@ -165,7 +171,7 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
     case ipc_measure_variable_data_ch0:
       if(pdFALSE == subscribe_add(data+0, msg->measure_subscribe.subscriber))
       {
-        /* TODO: Output error mesg? */
+        ipc_watchdog_signal_error(0);
         return pdFALSE;
       }
       break;
@@ -173,7 +179,25 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
     case ipc_measure_variable_data_ch1:
       if(pdFALSE == subscribe_add(data+1, msg->measure_subscribe.subscriber))
       {
-        /* TODO: Output error mesg? */
+        ipc_watchdog_signal_error(0);
+        return pdFALSE;
+      }
+      break;
+
+    case ipc_measure_variable_rate_ch0:
+      printf("A:  |", msg->measure_subscribe.subscriber);
+      if(pdFALSE == subscribe_add(rate+0, msg->measure_subscribe.subscriber))
+      {
+        ipc_watchdog_signal_error(0);
+        return pdFALSE;
+      }
+      break;
+
+    case ipc_measure_variable_rate_ch1:
+      printf("B:  |", msg->measure_subscribe.subscriber);
+      if(pdFALSE == subscribe_add(rate+1, msg->measure_subscribe.subscriber))
+      {
+        ipc_watchdog_signal_error(0);
         return pdFALSE;
       }
       break;
@@ -191,18 +215,12 @@ portBASE_TYPE send_data(
 {
   data[ch].msg.data.subscribe_measure_data.data = value;
   data[ch].msg.data.subscribe_measure_data.timestamp = timestamp;
-  subscribe_execute(data + ch);
-#if 0
-      if(mode.msg.data.subscribe_mode == oscilloscope_mode_multimeter)
-      {
-        mode.msg.data.subscribe_mode = oscilloscope_mode_oscilloscope;
-      }
-      else
-      {
-        mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
-      }
-      subscribe_execute(&mode);
-#endif
+  if(pdFALSE == subscribe_execute(data + ch))
+  {
+    ipc_watchdog_signal_error(0);
+    return pdFALSE;
+  }
+
   return pdTRUE;
 }
 

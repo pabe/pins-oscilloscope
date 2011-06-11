@@ -91,7 +91,11 @@ typedef struct
       uint16_t data;
     } subscribe_measure_data;
 
-    unsigned subscribe_measure_rate;
+    struct msg_subscribe_measure_rate
+    {
+      oscilloscope_input_t ch;
+      unsigned rate;
+    } subscribe_measure_rate;
   } data;
 } msg_t;
 
@@ -124,7 +128,7 @@ portBASE_TYPE ipc_get(
     const ipc_loop_t handlers[],
     size_t n);
 void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id);
-void subscribe_execute(subscribe_msg_t *v);
+portBASE_TYPE subscribe_execute(subscribe_msg_t *v);
 portBASE_TYPE subscribe_add(subscribe_msg_t *v, ipc_addr_t subscriber);
 
 #endif /* __API__H_ */

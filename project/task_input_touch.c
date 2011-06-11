@@ -33,6 +33,7 @@
 
 /* private variables */
 static oscilloscope_mode_t mode;
+extern xSemaphoreHandle lcdLock;
 /* private functions */
 /*-----------------------------------------------------------*/
 
@@ -67,14 +68,13 @@ void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
 }
 
 static void printButton(void *data){
-
   u16 button;
   button = (int)data;
   printf("I am button:%d Mode:%d", button, mode);
 }
 
 static void setupButtons(void) { 
-  extern xSemaphoreHandle lcdLock; //FIXME
+  //extern xSemaphoreHandle lcdLock; //FIXME
   u16 i; 
   xSemaphoreTake(lcdLock, portMAX_DELAY);
   for (i = 0; i < 3; ++i) { 
@@ -108,7 +108,9 @@ void task_input_touch(void *p)
     if(pdFALSE == xQueueReceive(ipc_input_touch, &msg, timeout))
     {
       /* timeout work */
+	xSemaphoreTake(lcdLock, portMAX_DELAY);
 	ts_state = IOE_TS_GetState();
+	xSemaphoreGive(lcdLock); //FIXME
 
 	if (pressed) {
 	  if (!ts_state->TouchDetected)

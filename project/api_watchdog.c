@@ -4,6 +4,7 @@
  * API to interface the watchdog over IPC.
  */
 
+#include <stdio.h>
 #include "api_watchdog.h"
 
 xQueueHandle ipc_watchdog;

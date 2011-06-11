@@ -13,7 +13,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "task_watchdog.h"
+#include "api_watchdog.h"
 #include "task_controller.h"
 #include "api_controller.h"
 
@@ -46,13 +46,11 @@ void task_controller(void *p)
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
       /* with no timeouts this should never happen so kill ourself */
-      task_watchdog_signal_error();
-      vTaskDelete(NULL);
+      ipc_watchdog_signal_error(0);
     }
     else
     {    
-      task_watchdog_signal_error();
-      vTaskDelete(NULL);
+      ipc_watchdog_signal_error(0);
     }
   }
 }

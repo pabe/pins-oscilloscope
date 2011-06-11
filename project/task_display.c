@@ -1,8 +1,8 @@
 #include "api_controller.h"
 #include "api_display.h"
 #include "api_measure.h"
+#include "api_watchdog.h"
 #include "task_display.h"
-#include "task_watchdog.h"
 #include "oscilloscope.h"
 #include "GLCD.h"
 
@@ -41,15 +41,11 @@ void task_display(void *args)
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
       /* with no timeouts this should never happen so kill ourself */
-      task_watchdog_signal_error();
-      printf("|bar|");
-      vTaskDelete(NULL);
+      ipc_watchdog_signal_error(0);
     }
     else
     {
-      printf("|bar|");
-      task_watchdog_signal_error();
-      vTaskDelete(NULL);
+      ipc_watchdog_signal_error(0);
     }
   }
 }

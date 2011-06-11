@@ -19,7 +19,6 @@
 #include "api_watchdog.h"
 #include "api_controller.h"
 #include "task_input_gpio.h"
-#include "task_watchdog.h"
 
 /* private functions */
 static portBASE_TYPE init(void);

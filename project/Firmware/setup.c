@@ -89,6 +89,9 @@ void LED_out (u32 val) {
   GPIOD->BRR  = rv ^ 0x0002098;
 }
 
+/* shared memory with the task */
+extern void task_watchdog_signal_error(void);
+
 /* Function to execute if an assertion failed */
 void assert_failed(u8* file, u32 line) {
   printf("ASSERTION FAILURE: %s:%d ", file, line);

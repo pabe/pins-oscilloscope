@@ -18,8 +18,8 @@
 
 #include "api_input_touch.h"
 #include "api_controller.h"
+#include "api_watchdog.h"
 #include "task_input_touch.h"
-#include "task_watchdog.h"
 #include "oscilloscope.h"
 
  /*--- ONLY for testing purposes remove for release Drawing in this task---*/
@@ -144,8 +144,7 @@ void task_input_touch(void *p)
           break;
 
         default:
-          /* TODO: Output error mesg? */
-          task_watchdog_signal_error();
+          ipc_watchdog_signal_error(0);
       }
 
       /* recalculate timeout */

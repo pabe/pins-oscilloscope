@@ -46,7 +46,6 @@ void task_watchdog_signal_error(void)
 
 void task_watchdog(void *p)
 {
-  ipc_watchdog_signal_error(0);
   while(1)
   {
     if(pdTRUE == ipc_get(

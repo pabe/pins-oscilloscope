@@ -221,7 +221,7 @@ int main( void )
   if(pdFALSE == ipc_init()) 
   { 
     /* TODO: Output error mesg? */ 
-    task_watchdog_signal_error(); 
+    ipc_watchdog_signal_error(0);
   } 
  
   //xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL); 

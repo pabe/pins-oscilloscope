@@ -143,7 +143,6 @@ void measureTask (void* params)
 				adc_value = readChannel(oChan[i]);
 				//printf("%.2f ", voltageConversion(adc_value));
 				send_data(oChan[i].inputChannel,adc_value,packetCounter);
-			 	// assert(0);  DO something about failure in sending message?
 				packetCounter++;
 			}
 		}
@@ -230,7 +229,6 @@ void measureTaskOld (void* params) {
 				adc_value = readChannel(oChan[i]);
 				//printf("%.2f ", voltageConversion(adc_value));
 				ipc_controller_send_data(oChan[i].inputChannel,adc_value,packetCounter);
-			 	// assert(0);  DO something about failure in sending message?
 				packetCounter++;
 			}
 		}

@@ -98,7 +98,7 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
   switch(data->display_cmd)
   {
     case display_cmd_toggle_freeze_screen:
-      assert(0);
+      ipc_watchdog_signal_error(0);
       break;
 
     default:
@@ -162,7 +162,7 @@ void display_new_measure(char channel, uint16_t sample, int timestamp) {
 			display_sample(channel, sample);
 			break;
 		default:
-			assert(0);
+			ipc_watchdog_signal_error(0);
 			break;
 	}
 }

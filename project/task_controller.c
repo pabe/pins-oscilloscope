@@ -60,7 +60,7 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
 {
   switch(data->controller_cmd)
   {
-    case controller_cmd_set_mode_oscilloscope:
+    case controller_cmd_mode_set_oscilloscope:
       if(mode.msg.data.subscribe_mode != oscilloscope_mode_oscilloscope)
       {
         mode.msg.data.subscribe_mode = oscilloscope_mode_oscilloscope;
@@ -68,7 +68,7 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
       }
       break;
 
-    case controller_cmd_set_mode_multimeter:
+    case controller_cmd_mode_set_multimeter:
       if(mode.msg.data.subscribe_mode != oscilloscope_mode_multimeter)
       {
         mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
@@ -76,7 +76,7 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
       }
       break;
 
-    case controller_cmd_toggle_mode:
+    case controller_cmd_mode_do_toggle:
       if(mode.msg.data.subscribe_mode == oscilloscope_mode_multimeter)
       {
         mode.msg.data.subscribe_mode = oscilloscope_mode_oscilloscope;

@@ -23,11 +23,11 @@ portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode)
   switch(mode)
   {
     case oscilloscope_mode_oscilloscope:
-      cmd = controller_cmd_set_mode_oscilloscope;
+      cmd = controller_cmd_mode_set_oscilloscope;
       break;
 
     case oscilloscope_mode_multimeter:
-      cmd = controller_cmd_set_mode_multimeter;
+      cmd = controller_cmd_mode_set_multimeter;
       break;
 
     default:
@@ -39,7 +39,7 @@ portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode)
 
 portBASE_TYPE ipc_controller_mode_toggle(void)
 {
-  return ipc_controller_send_cmd(controller_cmd_toggle_mode);
+  return ipc_controller_send_cmd(controller_cmd_mode_do_toggle);
 }
 
 portBASE_TYPE ipc_controller_time_axis_increase(void)

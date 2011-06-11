@@ -88,6 +88,14 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
       subscribe_execute(&mode);
       break;
 
+    case controller_cmd_time_axis_increase:
+      printf("|CTR_SUB: AXIS_INC| ");
+      break;
+      
+    case controller_cmd_time_axis_decrease:
+      printf("|CTR_SUB: AXIS_DEC| ");
+      break;
+      
     default:
       return pdFALSE;
   }

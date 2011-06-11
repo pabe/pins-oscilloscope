@@ -44,12 +44,12 @@ portBASE_TYPE ipc_controller_mode_toggle(void)
 
 portBASE_TYPE ipc_controller_time_axis_increase(void)
 {
-  return pdFALSE;
+  return ipc_controller_send_cmd(controller_cmd_time_axis_increase);
 }
 
 portBASE_TYPE ipc_controller_time_axis_decrease(void)
 {
-  return pdFALSE;
+  return ipc_controller_send_cmd(controller_cmd_time_axis_decrease);
 }
 
 portBASE_TYPE ipc_controller_subscribe(

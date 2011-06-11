@@ -31,7 +31,8 @@ typedef struct
       msg_id_watchdog_cmd,
       msg_id_measure_subscribe,
       msg_id_subscribe_mode,
-      msg_id_subscribe_measure_data
+      msg_id_subscribe_measure_data,
+      msg_id_subscribe_measure_rate
     } id;
   } head;
   union msg_data
@@ -42,7 +43,7 @@ typedef struct
       controller_cmd_mode_set_multimeter,
       controller_cmd_mode_do_toggle,
       controller_cmd_time_axis_increase,
-      controller_cmd_time_axis_decrease,
+      controller_cmd_time_axis_decrease
     } controller_cmd;
 
     struct msg_controller_subscribe
@@ -74,7 +75,9 @@ typedef struct
       enum msg_measure_subscribe_variable
       {
         ipc_measure_variable_data_ch0,
-        ipc_measure_variable_data_ch1
+        ipc_measure_variable_data_ch1,
+        ipc_measure_variable_rate_ch0,
+        ipc_measure_variable_rate_ch1
       } variable;
       ipc_addr_t subscriber;
     } measure_subscribe;
@@ -87,6 +90,8 @@ typedef struct
       int timestamp;
       uint16_t data;
     } subscribe_measure_data;
+
+    unsigned subscribe_measure_rate;
   } data;
 } msg_t;
 

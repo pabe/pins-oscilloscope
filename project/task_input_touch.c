@@ -140,7 +140,7 @@ void task_input_touch(void *p)
         case msg_id_subscribe_mode:
           //printf("| MODE: %i |", msg.data.subscribe_mode);
 		  mode = msg.data.subscribe_mode;
-		  printf("mymode:%d ", mode);
+		  //printf("mymode:%d ", mode);
           break;
 
         default:

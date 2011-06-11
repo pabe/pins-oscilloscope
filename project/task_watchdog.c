@@ -26,6 +26,7 @@
 
 /* private functions */
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *msg);
+static void execute_led(void);
 
 /* public variables */
 /* private variables */
@@ -45,6 +46,7 @@ void task_watchdog_signal_error(void)
 
 void task_watchdog(void *p)
 {
+  ipc_watchdog_signal_error(0);
   while(1)
   {
     if(pdTRUE == ipc_get(
@@ -53,20 +55,13 @@ void task_watchdog(void *p)
           msg_handle_table,
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
-      u32 led;
-
-      led  = lit_led_watchdog ? LED_BLUE   : 0;
-      led |= we_got_error     ? LED_RED    : 0;
-      led |= lit_led_aux      ? LED_ORANGE : 0;
-
-      LED_out(led);
+      execute_led();
       lit_led_watchdog = !lit_led_watchdog;
     }
     else
     {
       task_watchdog_signal_error();
-	  printf("Foo! Watchdog dead!");
-      vTaskDelete(NULL);
+      execute_led();
     }
   }
 }
@@ -78,10 +73,12 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *msg)
   {
     case watchdog_cmd_aux_led_lit:
       lit_led_aux = 1;
+      execute_led();
       break;
 
     case watchdog_cmd_aux_led_quench:
       lit_led_aux = 0;
+      execute_led();
       break;
 
     default:
@@ -90,3 +87,15 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *msg)
 
   return pdTRUE;
 }
+
+static void execute_led(void)
+{
+  u32 led;
+
+  led  = lit_led_watchdog ? LED_BLUE   : 0;
+  led |= we_got_error     ? LED_RED    : 0;
+  led |= lit_led_aux      ? LED_ORANGE : 0;
+
+  LED_out(led);
+}
+

@@ -8,6 +8,15 @@
 
 xQueueHandle ipc_watchdog;
 
+/* shared memory with the task */
+extern void task_watchdog_signal_error(void);
+
+void _ipc_watchdog_signal_error(const char* path, int err)
+{
+  printf("ERROR(%i)@%s   ", err, path);
+  task_watchdog_signal_error();
+}
+
 portBASE_TYPE ipc_watchdog_set_led_aux(portBASE_TYPE value)
 {
   msg_t msg;

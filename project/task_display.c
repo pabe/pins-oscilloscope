@@ -82,6 +82,7 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
 {
+#if 0
   switch(data->subscribe_measure_data.ch)
   {
     case input_channel0:
@@ -95,13 +96,12 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
     default:
       return pdFALSE;
   }
-
+#endif 
   return pdTRUE;
 }
 
 static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *data)
 {
-  printf("DAMP!");
   switch(data->subscribe_measure_rate.ch)
   {
     case input_channel0:

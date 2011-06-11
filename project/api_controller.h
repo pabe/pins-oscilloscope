@@ -26,7 +26,9 @@ extern xQueueHandle ipc_controller;
 
 
 portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode);
-portBASE_TYPE ipc_controller_toggle_mode(void);
+portBASE_TYPE ipc_controller_mode_mode(void);
+portBASE_TYPE ipc_controller_time_axis_increase(void);
+portBASE_TYPE ipc_controller_time_axis_decrease(void);
 
 /*
  * moved to api_display:
@@ -34,8 +36,6 @@ portBASE_TYPE ipc_controller_toggle_mode(void);
  * ipc_controller_toggle_channel1_subbscribe
  */
 
-portBASE_TYPE ipc_controller_toggle_time_axis_increase(void);
-portBASE_TYPE ipc_controller_toggle_time_axis_decrease(void);
 
 
 

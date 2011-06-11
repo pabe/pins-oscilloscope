@@ -37,33 +37,17 @@ portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode)
   return ipc_controller_send_cmd(cmd);
 }
 
-portBASE_TYPE ipc_controller_toggle_mode(void)
+portBASE_TYPE ipc_controller_mode_toggle(void)
 {
   return ipc_controller_send_cmd(controller_cmd_toggle_mode);
 }
 
-portBASE_TYPE ipc_controller_toggle_time_axis_increase(void)
+portBASE_TYPE ipc_controller_time_axis_increase(void)
 {
   return pdFALSE;
 }
 
-portBASE_TYPE ipc_controller_toggle_time_axis_decrease(void)
-{
-  return pdFALSE;
-}
-
-portBASE_TYPE ipc_controller_toggle_channel0_subbscribe(void)
-{
-  return pdFALSE;
-}
-
-portBASE_TYPE ipc_controller_toggle_channel1_subbscribe(void)
-{
-  return pdFALSE;
-}
-
-
-portBASE_TYPE ipc_controller_toggle_freeze_screen(void)
+portBASE_TYPE ipc_controller_time_axis_decrease(void)
 {
   return pdFALSE;
 }

@@ -16,6 +16,7 @@
 #include "api_input_touch.h"
 #include "api_controller.h"
 #include "api_watchdog.h"
+#include "api_display.h"
 #include "task_input_touch.h"
 #include "oscilloscope.h"
 
@@ -65,11 +66,63 @@ void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
 }
 
 static void btnPressOscMode(u16 btn) {
-    printf("btn:%d Mode:%d", btn, mode);
+    //printf("btn:%d Mode:%d", btn, mode);
+	switch(btn){
+		case 0:
+			ipc_display_toggle_freeze_screen();
+			break;
+
+		case 1:
+			ipc_controller_mode_toggle();
+			break;
+		
+		case 2:
+			ipc_controller_time_axis_decrease();
+			break;
+		
+		case 3:
+			ipc_controller_time_axis_increase();
+			break;
+		case 4:
+			ipc_display_toggle_channel(input_channel0);
+			break;
+									   
+		case 5:
+			ipc_display_toggle_channel(input_channel1);
+			break;					 
+
+		default:
+			printf("unhandled button");
+			ipc_watchdog_signal_error(0);		
+}
 }
 
 static void btnPressVmMode(u16 btn) {
-    printf("btn:%d Mode:%d", btn, mode);
+	//printf("btn:%d Mode:%d", btn, mode);
+	switch(btn){
+		case 0:
+			ipc_display_toggle_freeze_screen();
+			break;
+		case 1:
+			ipc_controller_mode_toggle();
+			break;
+		
+		case 2:
+			
+			break;
+		case 3:
+			
+			break;
+		case 4:
+			
+			break;
+		case 5:
+			
+			break;
+		default:
+			printf("unhandled button");
+			ipc_watchdog_signal_error(0);								
+}
 }
 
 static void registerButtonsCallback(void) {

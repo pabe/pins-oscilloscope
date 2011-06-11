@@ -11,7 +11,7 @@
 
 #include "api_controller.h"
 #include "api_measure.h"
-#include "task_watchdog.h"
+#include "api_watchdog.h"
 #include "task_measure.h"
 
 int samplerate = 50;  //FIX!
@@ -118,7 +118,6 @@ void measureTask (void* params)
   data[0].msg.data.subscribe_measure_data.ch = input_channel0;
   data[1].msg.data.subscribe_measure_data.ch = input_channel1;
 
-      printf("|b %i|",herzToTicks(samplerate));
   while(1)
   {
     if(pdTRUE == ipc_get(
@@ -153,9 +152,7 @@ void measureTask (void* params)
     }
     else
     {    
-      /* ipc_get() failed in some way */
-      task_watchdog_signal_error();
-      vTaskDelete(NULL);
+      ipc_watchdog_signal_error(0);
     }
   }
 }

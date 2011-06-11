@@ -185,7 +185,6 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
       break;
 
     case ipc_measure_variable_rate_ch0:
-      printf("A:  |", msg->measure_subscribe.subscriber);
       if(pdFALSE == subscribe_add(rate+0, msg->measure_subscribe.subscriber))
       {
         ipc_watchdog_signal_error(0);
@@ -194,7 +193,6 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
       break;
 
     case ipc_measure_variable_rate_ch1:
-      printf("B:  |", msg->measure_subscribe.subscriber);
       if(pdFALSE == subscribe_add(rate+1, msg->measure_subscribe.subscriber))
       {
         ipc_watchdog_signal_error(0);

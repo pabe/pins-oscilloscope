@@ -11,7 +11,7 @@
 
 #if USE_TIMER
 #include "stm32f10x_tim.h"
-//#include "stm32f10x_rcc.h"
+#include "stm32f10x_rcc.h"
 #endif
 
 #include "api_controller.h"
@@ -289,6 +289,7 @@ void TimerInit(void){
 TIM_TimeBaseInitTypeDef   TIM_TimeBaseStructure;
 TIM_OCInitTypeDef         TIM_OCInitStructure;
 
+  RCC_APB1PeriphClockCmd( RCC_APB2Periph_TIM1, ENABLE );
   /* TIM1 configuration ------------------------------------------------------*/
   /* Time Base configuration */
   TIM_TimeBaseStructInit(&TIM_TimeBaseStructure); 
@@ -313,7 +314,7 @@ TIM_OCInitTypeDef         TIM_OCInitStructure;
 
 
   void measureInit(void) {
-
+prvSetupHardware();
 
  if(NUMBER_OF_CHANNELS != 2){
 		assert(0);} //this need to be generalized if other amount of chans is needed;

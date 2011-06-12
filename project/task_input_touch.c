@@ -25,8 +25,6 @@
 
 /*-------------------------------------*/
 
-#define WIDTH 320 
-
 /* public variables */
 
 /* private variables */
@@ -134,9 +132,9 @@ static void registerButtonsCallback(void) {
     for (i = 0; i < 6; ++i) {
         btn = get_button(i);
         //GLCD_drawRect(0 + 40 * i, 30, 40, 40);
-        //registerTSCallback(WIDTH - 30 - 40, WIDTH - 30, 0 + 40 * i + 40, 0 + 40 * i, &btnPressHandler, (void*) i);
+        //registerTSCallback(DISPLAY_X_RES - 30 - 40, DISPLAY_X_RES - 30, 0 + 40 * i + 40, 0 + 40 * i, &btnPressHandler, (void*) i);
         //printf("btn%d   l%d     r%d     low%d     up%d     ", i,btn->left, btn->right, btn->lower, btn->upper);
-        registerTSCallback(WIDTH - btn->left, WIDTH - btn->right, btn->lower, btn->upper, &btnPressHandler, (void*) i);
+		registerTSCallback(DISPLAY_X_RES - btn->left, DISPLAY_X_RES - btn->right, btn->lower, btn->upper, &btnPressHandler, (void*) i);
     }
     xSemaphoreGive(lcdLock);
 }
@@ -194,9 +192,6 @@ void task_input_touch(void *p) {
                 }
                 pressed = 1;
             }
-
-            /*if (ts_state->TouchDetected) {
-                } */
 
         } else {
             switch (msg.head.id) {

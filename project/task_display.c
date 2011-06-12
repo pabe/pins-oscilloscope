@@ -250,7 +250,6 @@ void setup_buttons(void){
   buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
   buttons[i+1].text =	btn_strings[i-1];
   }
-  printf("");
 };
 
 Pbutton get_button(u16 btn){

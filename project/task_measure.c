@@ -137,7 +137,7 @@ void measureTask (void* params)
   {
     if(pdTRUE == ipc_get(
           ipc_measure,
-          (5000 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
+          (50 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
           msg_handle_table,
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {

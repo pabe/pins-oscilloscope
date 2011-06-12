@@ -135,8 +135,8 @@ static void registerButtonsCallback(void) {
         btn = get_button(i);
         //GLCD_drawRect(0 + 40 * i, 30, 40, 40);
         //registerTSCallback(WIDTH - 30 - 40, WIDTH - 30, 0 + 40 * i + 40, 0 + 40 * i, &btnPressHandler, (void*) i);
-    //printf("btn%d   l%d     r%d     low%d     up%d     ", i,btn->left, btn->right, btn->lower, btn->upper);
-        registerTSCallback(btn->left, btn->right, btn->lower, btn->upper, &btnPressHandler, (void*) i);
+        //printf("btn%d   l%d     r%d     low%d     up%d     ", i,btn->left, btn->right, btn->lower, btn->upper);
+        registerTSCallback(WIDTH - btn->left, WIDTH - btn->right, btn->lower, btn->upper, &btnPressHandler, (void*) i);
     }
     xSemaphoreGive(lcdLock);
 }

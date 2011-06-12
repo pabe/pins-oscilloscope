@@ -169,6 +169,8 @@ void display_redraw(void) {
 			break;
 		case oscilloscope_mode_multimeter:
 			// Draw interface
+			display_buttons();
+
 			// Output last measurement?
 			break;
 		default:
@@ -201,6 +203,8 @@ void display_sample(char channel, uint16_t sample) {
 		// Draw new pixel
 		case oscilloscope_mode_oscilloscope:
 			// Remove old pixel
+			xSemaphoreTake(lcdLock, portMAX_DELAY);
+
 			//GLCD_setTextColor(Black);
 			GLCD_setTextColor(White);
 			display_show_analog(display_index(channel), display_buffer[display_index(channel)][channel]);
@@ -208,6 +212,8 @@ void display_sample(char channel, uint16_t sample) {
 			// Display new pixel
 			GLCD_setTextColor(channel ? Green : Magenta);
 			display_show_analog(display_index(channel), sample);
+
+			xSemaphoreGive(lcdLock);
 
 			// Update buffer
 			display_buffer[display_index(channel)][channel] = sample;
@@ -226,6 +232,8 @@ void display_sample(char channel, uint16_t sample) {
 }
 
 void display_show_analog(uint16_t x, uint16_t y) {
+	// REMEMBER TO GRAB LOCK BEFORE CALLING!
+	
 	// Stupid display has all messed up coordinate system :/
 	// We pretend this is not the case...
 	//          <- y
@@ -236,29 +244,27 @@ void display_show_analog(uint16_t x, uint16_t y) {
 	// +-----------+
 	uint16_t disx = (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT) - y / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
 	uint16_t disy = DISPLAY_X_RES - x;
-	xSemaphoreTake(lcdLock, portMAX_DELAY);
 	GLCD_putPixel(disx,disy);
-	xSemaphoreGive(lcdLock);
 }
 
 void setup_buttons(void){
-  int i;
-  char* btn_strings[] = {"Mode","+","-","CH 1", "CH 2"}; 
+	int i;
+	char* btn_strings[] = {"M","+","-","A", "B"}; 
 
-  /*Setup screen button*/
-  buttons[0].upper = 0;
-  buttons[0].lower = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT - 5;// 5 Padding btw menu screen
-  buttons[0].left = DISPLAY_X_RES; 
-  buttons[0].right = 0;
-  buttons[0].text = "";
+	/*Setup screen button*/
+		buttons[0].upper = 0;
+		buttons[0].lower = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT - 5;// 5 Padding btw menu screen
+		buttons[0].left = DISPLAY_X_RES; 
+		buttons[0].right = 0;
+		buttons[0].text = "";
 
-  for (i=0; i<NUM_MENU_BUTTONS;i++){ //Button 0 is screen!
-  buttons[i+1].upper = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT;
-  buttons[i+1].lower = DISPLAY_Y_RES;
-  buttons[i+1].left = DISPLAY_X_RES - i *	DISPLAY_X_RES / NUM_MENU_BUTTONS;
-  buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
-  buttons[i+1].text =	btn_strings[i];
-  }
+	for (i=0; i<NUM_MENU_BUTTONS;i++){ //Button 0 is screen!
+		buttons[i+1].upper = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT;
+		buttons[i+1].lower = DISPLAY_Y_RES;
+		buttons[i+1].left = DISPLAY_X_RES - i *	DISPLAY_X_RES / NUM_MENU_BUTTONS;
+		buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
+		buttons[i+1].text =	btn_strings[i];
+	}
 };
 
 Pbutton get_button(u16 btn){
@@ -266,11 +272,25 @@ Pbutton get_button(u16 btn){
 }
 
 void display_button(int button) {
+	xSemaphoreTake(lcdLock, portMAX_DELAY);
+	GLCD_setTextColor(Black);
 	GLCD_drawRect(buttons[button].upper, buttons[button].right, buttons[button].lower-buttons[button].upper, buttons[button].left-buttons[button].right);
+	GLCD_displayChar(buttons[button].upper + 10, buttons[button].right + 20, *(buttons[button].text));
+	xSemaphoreGive(lcdLock);
 }
 
 void display_buttons(void) {
 	int i;
-	for(i = 0; i<NUM_MENU_BUTTONS; i++)
-		display_button(i+1);
+	switch(display_mode) {
+		case oscilloscope_mode_oscilloscope:
+			for(i = 0; i<NUM_MENU_BUTTONS; i++)
+				display_button(i+1);
+			break;
+		case oscilloscope_mode_multimeter:
+			//Print buttons of interest
+			break;
+		default:
+			//Whoops?
+			break;
+	}
 }

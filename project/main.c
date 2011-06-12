@@ -211,10 +211,10 @@ int main( void )
   prvSetupHardware(); 
   IOE_Config(); 
  
-  printQueue = xQueueCreate(128, 1); 
+  printQueue = xQueueCreate(1024, 1); //FIXME MAKE SHORTER? 
  
-  initDisplay(); 
-  //setupButtons(); 
+  setup_buttons();
+  initDisplay();  
   measureInit(); 
 
    

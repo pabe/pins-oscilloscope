@@ -10,7 +10,9 @@
 
 uint16_t display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS] = {0};
 int display_buffer_index[NUMBER_OF_CHANNELS] = {0};
+button buttons[NUM_BUTTONS];
 char display_buffer_enable[NUMBER_OF_CHANNELS] = {0};
+
 
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
@@ -175,17 +177,12 @@ void display_redraw(void) {
 }
 
 void display_new_measure(char channel, uint16_t sample, int timestamp) {
+	//printf("[%d,%d,%d=%d]", channel, sample, timestamp, display_buffer_index[channel]);
 	switch(display_mode) {
 		case oscilloscope_mode_oscilloscope: 
+			while(display_buffer_index[channel] != timestamp)
+				display_sample(channel, 0);
 			display_sample(channel, sample);
-#if 0
-			do {
-				if((display_buffer_index[channel]) == timestamp)
-					display_sample(channel, sample);
-				else
-					display_sample(channel, 0);
-			} while(++display_buffer_index[channel] != timestamp);
-#endif
 			break;
 		case oscilloscope_mode_multimeter: 
 			display_sample(channel, sample);
@@ -203,7 +200,8 @@ void display_sample(char channel, uint16_t sample) {
 		// Draw new pixel
 		case oscilloscope_mode_oscilloscope:
 			// Remove old pixel
-			GLCD_setTextColor(Black);
+			//GLCD_setTextColor(Black);
+			GLCD_setTextColor(White);
 			display_show_analog(display_index(channel), display_buffer[display_index(channel)][channel]);
 
 			// Display new pixel
@@ -240,4 +238,22 @@ void display_show_analog(uint16_t x, uint16_t y) {
 	xSemaphoreTake(lcdLock, portMAX_DELAY);
 	GLCD_putPixel(disx,disy);
 	xSemaphoreGive(lcdLock);
+}
+
+void setup_buttons(void){
+  int i;
+  char* btn_strings[] = {"Mode","+","-","CH 1", "CH 2"}; 
+
+  for (i=0; i<NUM_MENU_BUTTONS;i++){ //Button 0 is screen!
+  buttons[i+1].upper = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT;
+  buttons[i+1].lower = DISPLAY_Y_RES;
+  buttons[i+1].left = DISPLAY_X_RES - i *	DISPLAY_X_RES / NUM_MENU_BUTTONS;
+  buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
+  buttons[i+1].text =	btn_strings[i-1];
+  }
+  printf("");
+};
+
+Pbutton get_button(u16 btn){
+	return &buttons[btn];
 }

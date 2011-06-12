@@ -19,6 +19,7 @@
 #include "api_display.h"
 #include "task_input_touch.h"
 #include "oscilloscope.h"
+#include "task_display.h"
 
 
 
@@ -67,71 +68,75 @@ void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
 
 static void btnPressOscMode(u16 btn) {
     //printf("btn:%d Mode:%d", btn, mode);
-	switch(btn){
-		case 0:
-			ipc_display_toggle_freeze_screen();
-			break;
+    switch (btn) {
+        case 0:
+            ipc_display_toggle_freeze_screen();
+            break;
 
-		case 1:
-			ipc_controller_mode_toggle();
-			break;
-		
-		case 2:
-			ipc_controller_time_axis_decrease();
-			break;
-		
-		case 3:
-			ipc_controller_time_axis_increase();
-			break;
-		case 4:
-			ipc_display_toggle_channel(input_channel0);
-			break;
-									   
-		case 5:
-			ipc_display_toggle_channel(input_channel1);
-			break;					 
+        case 1:
+            ipc_controller_mode_toggle();
+            break;
 
-		default:
-			printf("unhandled button");
-			ipc_watchdog_signal_error(0);		
-}
+        case 2:
+            ipc_controller_time_axis_decrease();
+            break;
+
+        case 3:
+            ipc_controller_time_axis_increase();
+            break;
+        case 4:
+            ipc_display_toggle_channel(input_channel0);
+            break;
+
+        case 5:
+            ipc_display_toggle_channel(input_channel1);
+            break;
+
+        default:
+            printf("unhandled button");
+            ipc_watchdog_signal_error(0);
+    }
 }
 
 static void btnPressVmMode(u16 btn) {
-	//printf("btn:%d Mode:%d", btn, mode);
-	switch(btn){
-		case 0:
-			ipc_display_toggle_freeze_screen();
-			break;
-		case 1:
-			ipc_controller_mode_toggle();
-			break;
-		
-		case 2:
-			
-			break;
-		case 3:
-			
-			break;
-		case 4:
-			
-			break;
-		case 5:
-			
-			break;
-		default:
-			printf("unhandled button");
-			ipc_watchdog_signal_error(0);								
-}
+    //printf("btn:%d Mode:%d", btn, mode);
+    switch (btn) {
+        case 0:
+            ipc_display_toggle_freeze_screen();
+            break;
+        case 1:
+            ipc_controller_mode_toggle();
+            break;
+
+        case 2:
+
+            break;
+        case 3:
+
+            break;
+        case 4:
+
+            break;
+        case 5:
+
+            break;
+        default:
+            printf("unhandled button");
+            ipc_watchdog_signal_error(0);
+    }
 }
 
 static void registerButtonsCallback(void) {
     u16 i;
+    Pbutton btn = NULL;
+
     xSemaphoreTake(lcdLock, portMAX_DELAY);
     for (i = 0; i < 6; ++i) {
-        GLCD_drawRect(0 + 40 * i, 30, 40, 40);
-        registerTSCallback(WIDTH - 30 - 40, WIDTH - 30, 0 + 40 * i + 40, 0 + 40 * i,
-                &btnPressHandler, (void*) i);
+        btn = get_button(i);
+        //GLCD_drawRect(0 + 40 * i, 30, 40, 40);
+        //registerTSCallback(WIDTH - 30 - 40, WIDTH - 30, 0 + 40 * i + 40, 0 + 40 * i, &btnPressHandler, (void*) i);
+        //printf("btn%d   l%d     r%d     low%d     up%d     ", i,btn->left, btn->right, btn->lower, btn->upper);
+        registerTSCallback(WIDTH - btn->left, WIDTH - btn->right, btn->lower, btn->upper, &btnPressHandler, (void*) i);
     }
     xSemaphoreGive(lcdLock);
 }

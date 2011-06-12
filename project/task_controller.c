@@ -34,6 +34,11 @@ static const ipc_loop_t msg_handle_table[] =
   { msg_id_controller_subscribe,   handle_msg_subscribe }
 };
 
+static const ipc_subscribe_table_t ipc_subscribe_table[] =
+{
+  IPC_SUBSCRIBE_TABLE_INIT(&mode, ipc_controller_variable_mode, controller_subscribe)
+};
+
 /* public functions */
 void task_controller(void *p)
 {
@@ -126,19 +131,10 @@ static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *
   return pdTRUE;
 }
 
-static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *data)
+static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
 {
-  switch(data->controller_subscribe.variable)
-  {
-    case ipc_controller_variable_mode:
-      if(pdFALSE == subscribe_add(&mode, data->controller_subscribe.subscriber))
-      {
-        /* TODO: Output error mesg? */
-      }
-      break;
-
-    default:
-      return pdFALSE;
-  }
-  return pdTRUE;
+  return ipc_handle_msg_subscribe(
+      msg,
+      ipc_subscribe_table, 
+      sizeof(ipc_subscribe_table)/sizeof(ipc_subscribe_table[0]));
 }

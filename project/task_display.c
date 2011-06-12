@@ -174,17 +174,12 @@ void display_redraw(void) {
 }
 
 void display_new_measure(char channel, uint16_t sample, int timestamp) {
+	//printf("[%d,%d,%d=%d]", channel, sample, timestamp, display_buffer_index[channel]);
 	switch(display_mode) {
 		case oscilloscope_mode_oscilloscope: 
+			while(display_buffer_index[channel] != timestamp)
+				display_sample(channel, 0);
 			display_sample(channel, sample);
-#if 0
-			do {
-				if((display_buffer_index[channel]) == timestamp)
-					display_sample(channel, sample);
-				else
-					display_sample(channel, 0);
-			} while(++display_buffer_index[channel] != timestamp);
-#endif
 			break;
 		case oscilloscope_mode_multimeter: 
 			display_sample(channel, sample);
@@ -202,7 +197,8 @@ void display_sample(char channel, uint16_t sample) {
 		// Draw new pixel
 		case oscilloscope_mode_oscilloscope:
 			// Remove old pixel
-			GLCD_setTextColor(Black);
+			//GLCD_setTextColor(Black);
+			GLCD_setTextColor(White);
 			display_show_analog(display_index(channel), display_buffer[display_index(channel)][channel]);
 
 			// Display new pixel

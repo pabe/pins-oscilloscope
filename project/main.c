@@ -22,6 +22,7 @@
 #include "task_watchdog.h" 
 #include "api_controller.h" 
 #include "api_watchdog.h" 
+#include "ipc.h" 
 #include "task_measure.h" 
 #include "task_display.h" 
 #define WIDTH 320 
@@ -211,10 +212,10 @@ int main( void )
   prvSetupHardware(); 
   IOE_Config(); 
  
-  printQueue = xQueueCreate(128, 1); 
+  printQueue = xQueueCreate(1024, 1); //FIXME MAKE SHORTER? 
  
-  initDisplay(); 
-  //setupButtons(); 
+  setup_buttons();
+  initDisplay();  
   measureInit(); 
 
    

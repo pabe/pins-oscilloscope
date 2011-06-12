@@ -16,6 +16,7 @@
 #include "api_watchdog.h"
 #include "api_controller.h"
 #include "api_measure.h"
+#include "ipc.h"
 #include "task_controller.h"
 
 
@@ -27,7 +28,7 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg);
 
 /* public variables */
 /* private variables */
-static subscribe_msg_t mode;
+static ipc_subscribe_msg_t mode;
 static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_controller_cmd,         handle_msg_cmd },
@@ -43,7 +44,7 @@ static const ipc_subscribe_table_t ipc_subscribe_table[] =
 /* public functions */
 void task_controller(void *p)
 {
-  subscribe_init(&mode, msg_id_subscribe_mode);
+  ipc_subscribe_init(&mode, msg_id_subscribe_mode);
   update_mode(oscilloscope_mode_multimeter);
 
   ipc_measure_subscribe(ipc_controller, ipc_measure_variable_rate_ch0);
@@ -83,7 +84,7 @@ static void update_mode(oscilloscope_mode_t new_mode)
         break;
     }
     mode.msg.data.subscribe_mode = new_mode;
-    if(pdFALSE == subscribe_execute(&mode))
+    if(pdFALSE == ipc_subscribe_execute(&mode))
     {
       ipc_watchdog_signal_error(0);
     }

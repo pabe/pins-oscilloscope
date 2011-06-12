@@ -3,13 +3,16 @@
 #include "api_display.h"
 #include "api_measure.h"
 #include "api_watchdog.h"
+#include "ipc.h"
 #include "task_display.h"
 #include "oscilloscope.h"
 #include "GLCD.h"
 
 uint16_t display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS] = {0};
 int display_buffer_index[NUMBER_OF_CHANNELS] = {0};
+button buttons[NUM_BUTTONS];
 char display_buffer_enable[NUMBER_OF_CHANNELS] = {0};
+
 
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
@@ -235,4 +238,22 @@ void display_show_analog(uint16_t x, uint16_t y) {
 	xSemaphoreTake(lcdLock, portMAX_DELAY);
 	GLCD_putPixel(disx,disy);
 	xSemaphoreGive(lcdLock);
+}
+
+void setup_buttons(void){
+  int i;
+  char* btn_strings[] = {"Mode","+","-","CH 1", "CH 2"}; 
+
+  for (i=0; i<NUM_MENU_BUTTONS;i++){ //Button 0 is screen!
+  buttons[i+1].upper = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT;
+  buttons[i+1].lower = DISPLAY_Y_RES;
+  buttons[i+1].left = DISPLAY_X_RES - i *	DISPLAY_X_RES / NUM_MENU_BUTTONS;
+  buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
+  buttons[i+1].text =	btn_strings[i-1];
+  }
+  printf("");
+};
+
+Pbutton get_button(u16 btn){
+	return &buttons[btn];
 }

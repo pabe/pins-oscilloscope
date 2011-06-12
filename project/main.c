@@ -234,7 +234,9 @@ int main( void )
   xTaskCreate(task_input_touch, "Input driver for touchscreen", 100, NULL, 1, NULL); 
   xTaskCreate(task_display, "Display", 100, NULL, 1, NULL); 
   xTaskCreate( measureTask , "Measure", 100, NULL, 1, NULL); 
- 
+#if USE_TIMER
+  xTaskCreate( scheduledInterruptTask , "Measure", 100, NULL, 1, NULL); 
+#endif
   printf("Setup complete ");  // this is redirected to the display 
  
   vTaskStartScheduler(); 

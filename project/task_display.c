@@ -249,20 +249,21 @@ void display_show_analog(uint16_t x, uint16_t y) {
 
 void setup_buttons(void){
 	int i;
-	char* btn_strings[] = {"M","+","-","A", "B"}; 
+	char* btn_strings[] = {"M","-","+","A", "B"}; 
 
 	/*Setup screen button*/
-		buttons[0].upper = 0;
-		buttons[0].lower = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT - 5;// 5 Padding btw menu screen
-		buttons[0].left = DISPLAY_X_RES; 
-		buttons[0].right = 0;
+		buttons[0].upper = 0+5;
+		buttons[0].lower = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT - 10;// 5 Padding btw menu screen
+		buttons[0].left = DISPLAY_X_RES-5; 
+		buttons[0].right = 0+5;
 		buttons[0].text = "";
 
 	for (i=0; i<NUM_MENU_BUTTONS;i++){ //Button 0 is screen!
-		buttons[i+1].upper = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT;
+		buttons[i+1].upper = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT+1;
 		buttons[i+1].lower = DISPLAY_Y_RES;
 		buttons[i+1].left = DISPLAY_X_RES - i *	DISPLAY_X_RES / NUM_MENU_BUTTONS;
-		buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
+		//buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
+		buttons[i+1].right = DISPLAY_X_RES - (1+i) * DISPLAY_X_RES / NUM_MENU_BUTTONS;
 		buttons[i+1].text =	btn_strings[i];
 	}
 };

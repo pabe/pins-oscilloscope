@@ -17,6 +17,7 @@ char display_buffer_enable[NUMBER_OF_CHANNELS] = {0};
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data);
+// Is this old and should be removed?
 static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data);
@@ -82,25 +83,9 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
 {
+	int channel;
 	switch(data->subscribe_measure_data.ch)
 	{
-		case input_channel0:
-      {
-        int i;
-        uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE];
-        int timestamp;
-        ipc_measure_get_data(data, &timestamp);
-
-        for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
-        {
-			    display_new_measure(0, data[i], timestamp+i);
-        }
-      }
-      break;
-
-
-		case input_channel1:
-      break;
 #if 0
 		case input_channel0:
 			display_new_measure(0, data->subscribe_measure_data.data, data->subscribe_measure_data.timestamp);
@@ -110,10 +95,29 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
 			display_new_measure(1, data->subscribe_measure_data.data, data->subscribe_measure_data.timestamp);
 			break;
 #endif
+		case input_channel0:
+			channel = 0;
+			break;
+		case input_channel1:
+			channel = 1;
+			break;
+		default:
+			return pdFALSE;
+	}
 
-    default:
-      return pdFALSE;
-  }
+	// Fall through to here if all is well
+	{
+		int i;
+		uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE];
+		int timestamp;
+		ipc_measure_get_data(data, &timestamp);
+
+		for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
+		{
+			display_new_measure(channel, data[i], timestamp+i);
+		}
+	}
+
   return pdTRUE;
 }
 

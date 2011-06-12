@@ -14,7 +14,8 @@
 /* FreeRTOS */
 #include "FreeRTOS.h"
 #include "queue.h"
-/* common bith to ipc and api */
+
+/* common both to ipc and api */
 typedef xQueueHandle ipc_addr_t;
 
 typedef struct

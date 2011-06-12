@@ -26,8 +26,8 @@ portBASE_TYPE send_data(
     int timestamp);
 
 /* private variables */
-static subscribe_msg_t data[NUMBER_OF_CHANNELS];
-static subscribe_msg_t rate[NUMBER_OF_CHANNELS];
+static ipc_subscribe_msg_t data[NUMBER_OF_CHANNELS];
+static ipc_subscribe_msg_t rate[NUMBER_OF_CHANNELS];
 static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_measure_subscribe, handle_msg_subscribe }
@@ -119,8 +119,8 @@ void measureTask (void* params)
   assert(sizeof(data)/sizeof(data[0]) == sizeof(rate)/sizeof(rate[0]));
   for(i=0; i<sizeof(data)/sizeof(data[0]); i++)
   {
-    subscribe_init(data + i, msg_id_subscribe_measure_data);
-    subscribe_init(rate + i, msg_id_subscribe_measure_rate);
+    ipc_subscribe_init(data + i, msg_id_subscribe_measure_data);
+    ipc_subscribe_init(rate + i, msg_id_subscribe_measure_rate);
     data[i].msg.data.subscribe_measure_data.data = 0;
     data[i].msg.data.subscribe_measure_data.timestamp = 0;
     rate[i].msg.data.subscribe_measure_rate.rate = 0;
@@ -189,7 +189,7 @@ portBASE_TYPE send_data(
 {
   data[ch].msg.data.subscribe_measure_data.data = value;
   data[ch].msg.data.subscribe_measure_data.timestamp = timestamp;
-  if(pdFALSE == subscribe_execute(data + ch))
+  if(pdFALSE == ipc_subscribe_execute(data + ch))
   {
     ipc_watchdog_signal_error(0);
     return pdFALSE;

@@ -36,6 +36,7 @@ typedef struct
       msg_id_watchdog_cmd,
       msg_id_measure_subscribe,
       msg_id_subscribe_mode,
+      msg_id_subscribe_controller_divs,
       msg_id_subscribe_measure_data,
       msg_id_subscribe_measure_rate
     } id;
@@ -92,8 +93,7 @@ typedef struct
     struct msg_subscribe_measure_data
     {
       oscilloscope_input_t ch;
-      int timestamp;
-      uint16_t data;
+      unsigned buffer_index;
     } subscribe_measure_data;
 
     struct msg_subscribe_measure_rate

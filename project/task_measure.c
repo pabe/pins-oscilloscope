@@ -22,7 +22,7 @@ OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *cmd);
 portBASE_TYPE send_data(
     oscilloscope_input_t ch,
-    uint16_t data,
+    uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE],
     int timestamp);
 
 /* private variables */
@@ -121,8 +121,8 @@ void measureTask (void* params)
   {
     ipc_subscribe_init(data + i, msg_id_subscribe_measure_data);
     ipc_subscribe_init(rate + i, msg_id_subscribe_measure_rate);
-    data[i].msg.data.subscribe_measure_data.data = 0;
-    data[i].msg.data.subscribe_measure_data.timestamp = 0;
+//    data[i].msg.data.subscribe_measure_data.data = { 0 };
+//    data[i].msg.data.subscribe_measure_data.timestamp = 0;
     rate[i].msg.data.subscribe_measure_rate.rate = 0;
   }
 
@@ -138,15 +138,33 @@ void measureTask (void* params)
   {
     if(pdTRUE == ipc_get(
           ipc_measure,
-          (5000 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
+          (100 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
           msg_handle_table,
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
-      static uint16_t fakedata = 0;
-      static int fakedata_counter = 0;
-      send_data(input_channel0,fakedata,fakedata_counter);
-      fakedata++;
-      fakedata_counter+=2;
+      int i;
+      for(i=0; i<1; i++)
+      {
+        static int dir = 1;
+        static uint16_t fakedata_next = 1;
+        static int fakedata_counter = 0;
+        int j;
+        uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE];
+        
+        for(j=0;j<CONFIG_SAMPLE_BUFFER_SIZE;j++)
+        {
+//          data[j] = 1000;
+          data[j] = fakedata_next;
+          fakedata_next += 35*dir;
+        }
+
+        send_data(input_channel0,data,fakedata_counter);
+        fakedata_counter+=CONFIG_SAMPLE_BUFFER_SIZE;
+        if(fakedata_next >= 4000)
+          dir = -1;
+        else if(fakedata_next <= 50)
+          dir = 1;
+      }
 
 #if 0
 		for (i = 0; i < NUMBER_OF_CHANNELS;i++){
@@ -182,13 +200,16 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
       sizeof(ipc_subscribe_table)/sizeof(ipc_subscribe_table[0]));
 }
 
+#include <string.h>
 portBASE_TYPE send_data(
     oscilloscope_input_t ch,
-    uint16_t value,
+    uint16_t value[CONFIG_SAMPLE_BUFFER_SIZE],
     int timestamp)
 {
-  data[ch].msg.data.subscribe_measure_data.data = value;
-  data[ch].msg.data.subscribe_measure_data.timestamp = timestamp;
+  ipc_measure_put_data(value, timestamp);
+//  memcpy(data[ch].msg.data.subscribe_measure_data.data, value, sizeof(uint16_t)*CONFIG_SAMPLES_PER_PACKET);
+//  data[ch].msg.data.subscribe_measure_data.data = value;
+//  data[ch].msg.data.subscribe_measure_data.timestamp = timestamp;
   if(pdFALSE == ipc_subscribe_execute(data + ch))
   {
     ipc_watchdog_signal_error(0);

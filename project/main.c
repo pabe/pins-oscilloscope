@@ -21,6 +21,7 @@
 #include "task_controller.h" 
 #include "task_watchdog.h" 
 #include "api_controller.h" 
+#include "api_measure.h"
 #include "api_watchdog.h" 
 #include "ipc.h" 
 #include "task_measure.h" 
@@ -217,6 +218,7 @@ int main( void )
   setup_buttons();
   initDisplay();  
   measureInit(); 
+  ipc_measure_init();
 
    
   if(pdFALSE == ipc_init()) 
@@ -229,12 +231,12 @@ int main( void )
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
   //xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL); 
   //xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL); 
-  xTaskCreate(task_controller, "Controller", 100, NULL, 1, NULL); 
-  xTaskCreate(task_watchdog, "Watchdog driver", 100, NULL, 1, NULL); 
-  xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL); 
-  xTaskCreate(task_input_touch, "Input driver for touchscreen", 100, NULL, 1, NULL); 
-  xTaskCreate(task_display, "Display", 100, NULL, 1, NULL); 
-  xTaskCreate( measureTask , "Measure", 100, NULL, 1, NULL); 
+  xTaskCreate(task_controller, "Controller", 1000, NULL, 1, NULL); 
+  xTaskCreate(task_watchdog, "Watchdog driver", 1000, NULL, 1, NULL); 
+  xTaskCreate(task_input_gpio, "Input driver for GPIO", 1000, NULL, 1, NULL); 
+  xTaskCreate(task_input_touch, "Input driver for touchscreen", 1000, NULL, 1, NULL); 
+  xTaskCreate(task_display, "Display", 1000, NULL, 1, NULL); 
+  xTaskCreate( measureTask , "Measure", 1000, NULL, 1, NULL); 
  
   printf("Setup complete ");  // this is redirected to the display 
  

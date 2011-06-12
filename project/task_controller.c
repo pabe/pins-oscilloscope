@@ -16,6 +16,7 @@
 #include "api_watchdog.h"
 #include "api_controller.h"
 #include "api_measure.h"
+#include "ipc.h"
 #include "task_controller.h"
 
 

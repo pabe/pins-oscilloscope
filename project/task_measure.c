@@ -12,6 +12,7 @@
 #include "api_controller.h"
 #include "api_measure.h"
 #include "api_watchdog.h"
+#include "ipc.h"
 #include "task_measure.h"
 
 int samplerate = 50;  //FIX!

@@ -1,7 +1,5 @@
 /*
- * api:
- *
- * Base API.
+ * Some generica IPC helper functions.
  */
 
 #include "FreeRTOS.h"
@@ -21,6 +19,7 @@
 /* private variables */
 
 /* private functions */
+#include "ipc.h"
 static portBASE_TYPE ipc_init_module(xQueueHandle* h, unsigned portBASE_TYPE uxQueueLength);
 
 /* public functions */

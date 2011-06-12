@@ -3,6 +3,7 @@
 #include "api_display.h"
 #include "api_measure.h"
 #include "api_watchdog.h"
+#include "ipc.h"
 #include "task_display.h"
 #include "oscilloscope.h"
 #include "GLCD.h"

@@ -49,11 +49,9 @@ void task_input_gpio(void *p)
         {
           case 1:
             ipc_controller_mode_toggle();
-            ipc_watchdog_set_led_aux(1);
             break;
           case 3:
             ipc_controller_mode_toggle();
-            ipc_watchdog_set_led_aux(0);
             break;
 
           case 4:

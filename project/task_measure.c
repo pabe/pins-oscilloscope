@@ -156,7 +156,7 @@ void measureTask (void* params)
   while(1)
   {
 	//if (testIntForISROld != testIntForISR)
-	printf("%d", testIntForISR);
+	//printf("%d", testIntForISR);
 
 
     if(pdTRUE == ipc_get(

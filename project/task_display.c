@@ -3,6 +3,7 @@
 #include "api_display.h"
 #include "api_measure.h"
 #include "api_watchdog.h"
+#include "ipc.h"
 #include "task_display.h"
 #include "oscilloscope.h"
 #include "GLCD.h"
@@ -155,6 +156,7 @@ void display_redraw(void) {
 	switch(display_mode) {
 		case oscilloscope_mode_oscilloscope:
 			// Draw interface
+			display_buttons();
 
 			// Redraw buffers
 			for(channel = 0; channel < NUMBER_OF_CHANNELS; channel++) {
@@ -254,4 +256,14 @@ void setup_buttons(void){
 
 Pbutton get_button(u16 btn){
 	return &buttons[btn];
+}
+
+void display_button(int button) {
+	GLCD_drawRect(buttons[button].upper, buttons[button].right, buttons[button].lower-buttons[button].upper, buttons[button].left-buttons[button].right);
+}
+
+void display_buttons(void) {
+	int i;
+	for(i = 0; i<NUM_MENU_BUTTONS; i++)
+		display_button(i+1);
 }

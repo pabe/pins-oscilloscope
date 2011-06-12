@@ -1,7 +1,5 @@
 /*
- * api:
- *
- * Base API.
+ * Some generica IPC helper functions.
  */
 
 #include "FreeRTOS.h"
@@ -15,13 +13,16 @@
 #include "api_input_touch.h"
 #include "api_display.h"
 #include "api_measure.h"
+#include "ipc.h"
 
 /* public variables */
 
 /* private variables */
 
 /* private functions */
-static portBASE_TYPE ipc_init_module(xQueueHandle* h, unsigned portBASE_TYPE uxQueueLength);
+static portBASE_TYPE ipc_init_module(
+    xQueueHandle* h,
+    unsigned portBASE_TYPE uxQueueLength);
 
 /* public functions */
 portBASE_TYPE ipc_init(void)
@@ -77,8 +78,9 @@ portBASE_TYPE ipc_handle_msg_subscribe(
     int *variable = (int*)((int8_t*)msg + (int)table[i].variable);
     if(*variable == table[i].variable_var)
     {
-      ipc_addr_t *subscriber = (ipc_addr_t*)((int8_t*)msg + (int)table[i].subscriber);
-      if(pdFALSE == subscribe_add(table[i].var, *subscriber))
+      ipc_addr_t *subscriber = 
+        (ipc_addr_t*)((int8_t*)msg + (int)table[i].subscriber);
+      if(pdFALSE == ipc_subscribe_add(table[i].var, *subscriber))
       {
         ipc_watchdog_signal_error(0);
         return pdFALSE;
@@ -88,7 +90,7 @@ portBASE_TYPE ipc_handle_msg_subscribe(
   return pdTRUE;
 }
 
-void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id)
+void ipc_subscribe_init(ipc_subscribe_msg_t *sub, msg_id_t head_id)
 {
   int i;
   assert(sub);
@@ -100,7 +102,7 @@ void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id)
   }
 }
 
-portBASE_TYPE subscribe_execute(subscribe_msg_t *v)
+portBASE_TYPE ipc_subscribe_execute(ipc_subscribe_msg_t *v)
 {
   int i;
   assert(v);
@@ -110,7 +112,6 @@ portBASE_TYPE subscribe_execute(subscribe_msg_t *v)
     if(!v->queues[i])
       break;
 
-    /* ignore fails */
     if(pdFALSE == xQueueSendToBack(v->queues[i], &v->msg, CONFIG_IPC_WAIT))
       return pdFALSE;
 
@@ -119,7 +120,9 @@ portBASE_TYPE subscribe_execute(subscribe_msg_t *v)
   return pdTRUE;
 }
 
-portBASE_TYPE subscribe_add(subscribe_msg_t *v, ipc_addr_t subscriber)
+portBASE_TYPE ipc_subscribe_add(
+    ipc_subscribe_msg_t *v,
+    ipc_addr_t subscriber)
 {
   int i;
   assert(v);
@@ -141,7 +144,9 @@ portBASE_TYPE subscribe_add(subscribe_msg_t *v, ipc_addr_t subscriber)
 }
 
 /* private functions */
-static portBASE_TYPE ipc_init_module(xQueueHandle* h, unsigned portBASE_TYPE uxQueueLength)
+static portBASE_TYPE ipc_init_module(
+    xQueueHandle* h,
+    unsigned portBASE_TYPE uxQueueLength)
 {
   /* we do not init twice! */
   if(*h)

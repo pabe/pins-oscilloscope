@@ -13,6 +13,7 @@
 #include "task.h"
 
 #include "task_watchdog.h"
+#include "ipc.h"
 #include "api_watchdog.h"
 
 

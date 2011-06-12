@@ -331,7 +331,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>4</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -436,70 +436,20 @@
               <FileType>1</FileType>
               <FilePath>.\Firmware\src\stm32f10x_rcc.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Firmware\src\stm32f10x_tim.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Application</GroupName>
           <Files>
             <File>
-              <FileName>setup.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Firmware\setup.c</FilePath>
-            </File>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\config.h</FilePath>
-            </File>
-            <File>
-              <FileName>task_input_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_input_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_watchdog.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_watchdog.c</FilePath>
-            </File>
-            <File>
               <FileName>api_controller.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\api_controller.c</FilePath>
-            </File>
-            <File>
-              <FileName>api_watchdog.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\api_watchdog.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_controller.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_controller.c</FilePath>
-            </File>
-            <File>
-              <FileName>api.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\api.c</FilePath>
-            </File>
-            <File>
-              <FileName>api_input_touch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\api_input_touch.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_input_touch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_input_touch.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_display.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\task_display.c</FilePath>
             </File>
             <File>
               <FileName>api_display.c</FileName>
@@ -507,14 +457,69 @@
               <FilePath>.\api_display.c</FilePath>
             </File>
             <File>
-              <FileName>task_measure.c</FileName>
+              <FileName>api_input_touch.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\task_measure.c</FilePath>
+              <FilePath>.\api_input_touch.c</FilePath>
             </File>
             <File>
               <FileName>api_measure.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\api_measure.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_watchdog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\api_watchdog.c</FilePath>
+            </File>
+            <File>
+              <FileName>config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\config.h</FilePath>
+            </File>
+            <File>
+              <FileName>ipc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ipc.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>setup.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Firmware\setup.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_controller.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_controller.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_display.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_input_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_input_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_input_touch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_input_touch.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_measure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_measure.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_watchdog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\task_watchdog.c</FilePath>
             </File>
           </Files>
         </Group>

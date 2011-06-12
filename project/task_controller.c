@@ -20,6 +20,7 @@
 
 
 /* private functions */
+static void update_mode(oscilloscope_mode_t new_mode);
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *cmd);
 static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *cmd);
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg);
@@ -34,11 +35,16 @@ static const ipc_loop_t msg_handle_table[] =
   { msg_id_controller_subscribe,   handle_msg_subscribe }
 };
 
+static const ipc_subscribe_table_t ipc_subscribe_table[] =
+{
+  IPC_SUBSCRIBE_TABLE_INIT(&mode, ipc_controller_variable_mode, controller_subscribe)
+};
+
 /* public functions */
 void task_controller(void *p)
 {
   subscribe_init(&mode, msg_id_subscribe_mode);
-  mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
+  update_mode(oscilloscope_mode_multimeter);
 
   ipc_measure_subscribe(ipc_controller, ipc_measure_variable_rate_ch0);
   ipc_measure_subscribe(ipc_controller, ipc_measure_variable_rate_ch1);
@@ -62,36 +68,49 @@ void task_controller(void *p)
 }
 
 /* private functions */
+static void update_mode(oscilloscope_mode_t new_mode)
+{
+  if(mode.msg.data.subscribe_mode != new_mode)
+  {
+    switch(new_mode)
+    {
+      case oscilloscope_mode_oscilloscope:
+        ipc_watchdog_set_led_aux(0);
+        break;
+
+      case oscilloscope_mode_multimeter:
+        ipc_watchdog_set_led_aux(1);
+        break;
+    }
+    mode.msg.data.subscribe_mode = new_mode;
+    if(pdFALSE == subscribe_execute(&mode))
+    {
+      ipc_watchdog_signal_error(0);
+    }
+  }
+}
+
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
 {
   switch(data->controller_cmd)
   {
     case controller_cmd_mode_set_oscilloscope:
-      if(mode.msg.data.subscribe_mode != oscilloscope_mode_oscilloscope)
-      {
-        mode.msg.data.subscribe_mode = oscilloscope_mode_oscilloscope;
-        subscribe_execute(&mode);
-      }
+      update_mode(oscilloscope_mode_oscilloscope);
       break;
 
     case controller_cmd_mode_set_multimeter:
-      if(mode.msg.data.subscribe_mode != oscilloscope_mode_multimeter)
-      {
-        mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
-        subscribe_execute(&mode);
-      }
+      update_mode(oscilloscope_mode_multimeter);
       break;
 
     case controller_cmd_mode_do_toggle:
       if(mode.msg.data.subscribe_mode == oscilloscope_mode_multimeter)
       {
-        mode.msg.data.subscribe_mode = oscilloscope_mode_oscilloscope;
+        update_mode(oscilloscope_mode_oscilloscope);
       }
       else
       {
-        mode.msg.data.subscribe_mode = oscilloscope_mode_multimeter;
+        update_mode(oscilloscope_mode_multimeter);
       }
-      subscribe_execute(&mode);
       break;
 
     case controller_cmd_time_axis_increase:
@@ -126,19 +145,10 @@ static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *
   return pdTRUE;
 }
 
-static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *data)
+static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
 {
-  switch(data->controller_subscribe.variable)
-  {
-    case ipc_controller_variable_mode:
-      if(pdFALSE == subscribe_add(&mode, data->controller_subscribe.subscriber))
-      {
-        /* TODO: Output error mesg? */
-      }
-      break;
-
-    default:
-      return pdFALSE;
-  }
-  return pdTRUE;
+  return ipc_handle_msg_subscribe(
+      msg,
+      ipc_subscribe_table, 
+      sizeof(ipc_subscribe_table)/sizeof(ipc_subscribe_table[0]));
 }

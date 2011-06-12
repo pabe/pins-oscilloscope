@@ -66,6 +66,28 @@ portBASE_TYPE ipc_get(
   }
 }
 
+portBASE_TYPE ipc_handle_msg_subscribe(
+    msg_data_t *msg,
+    const ipc_subscribe_table_t table[],
+    size_t size)
+{
+  int i;
+  for(i = 0; i < size; i++)
+  {
+    int *variable = (int*)((int8_t*)msg + (int)table[i].variable);
+    if(*variable == table[i].variable_var)
+    {
+      ipc_addr_t *subscriber = (ipc_addr_t*)((int8_t*)msg + (int)table[i].subscriber);
+      if(pdFALSE == subscribe_add(table[i].var, *subscriber))
+      {
+        ipc_watchdog_signal_error(0);
+        return pdFALSE;
+      }
+    }
+  }
+  return pdTRUE;
+}
+
 void subscribe_init(subscribe_msg_t *sub, msg_id_t head_id)
 {
   int i;

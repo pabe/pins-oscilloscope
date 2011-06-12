@@ -38,6 +38,15 @@ static const ipc_loop_t msg_handle_table[] =
   { msg_id_measure_subscribe, handle_msg_subscribe }
 };
 
+static const ipc_subscribe_table_t ipc_subscribe_table[] =
+{
+  IPC_SUBSCRIBE_TABLE_INIT(data+0, ipc_measure_variable_data_ch0, measure_subscribe),
+  IPC_SUBSCRIBE_TABLE_INIT(data+1, ipc_measure_variable_data_ch1, measure_subscribe),
+  IPC_SUBSCRIBE_TABLE_INIT(rate+0, ipc_measure_variable_rate_ch0, measure_subscribe),
+  IPC_SUBSCRIBE_TABLE_INIT(rate+1, ipc_measure_variable_rate_ch1, measure_subscribe)
+};
+
+
 portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel){
 	int cntr = 0;
  	while(cntr < NUMBER_OF_CHANNELS){
@@ -180,44 +189,10 @@ void measureTask (void* params)
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
 {
-  switch(msg->measure_subscribe.variable)
-  {
-    case ipc_measure_variable_data_ch0:
-      if(pdFALSE == subscribe_add(data+0, msg->measure_subscribe.subscriber))
-      {
-        ipc_watchdog_signal_error(0);
-        return pdFALSE;
-      }
-      break;
-
-    case ipc_measure_variable_data_ch1:
-      if(pdFALSE == subscribe_add(data+1, msg->measure_subscribe.subscriber))
-      {
-        ipc_watchdog_signal_error(0);
-        return pdFALSE;
-      }
-      break;
-
-    case ipc_measure_variable_rate_ch0:
-      if(pdFALSE == subscribe_add(rate+0, msg->measure_subscribe.subscriber))
-      {
-        ipc_watchdog_signal_error(0);
-        return pdFALSE;
-      }
-      break;
-
-    case ipc_measure_variable_rate_ch1:
-      if(pdFALSE == subscribe_add(rate+1, msg->measure_subscribe.subscriber))
-      {
-        ipc_watchdog_signal_error(0);
-        return pdFALSE;
-      }
-      break;
-
-    default:
-      return pdFALSE;
-  }
-  return pdTRUE;
+  return ipc_handle_msg_subscribe(
+      msg,
+      ipc_subscribe_table,
+      sizeof(ipc_subscribe_table)/sizeof(ipc_subscribe_table[0]));
 }
 
 portBASE_TYPE send_data(

@@ -3,7 +3,7 @@
 #include "stm32f10x_adc.h"
 #include "oscilloscope.h"
 #define NUMBER_OF_CHANNELS 2  //Number of probes on the oscilloscope
-#define USE_TIMER  1
+#define USE_TIMER  0
 #define ADC_MAX ((1<<12)-1)
 
 typedef struct {

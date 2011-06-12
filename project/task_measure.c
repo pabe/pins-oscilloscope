@@ -38,14 +38,11 @@ portBASE_TYPE send_data(
     int timestamp);
 
 /* private variables */
-<<<<<<< HEAD
-static int testIntForISR;
-static subscribe_msg_t data[NUMBER_OF_CHANNELS];
-static subscribe_msg_t rate[NUMBER_OF_CHANNELS];
-=======
+
+int testIntForISR;
+
 static ipc_subscribe_msg_t data[NUMBER_OF_CHANNELS];
 static ipc_subscribe_msg_t rate[NUMBER_OF_CHANNELS];
->>>>>>> ac826f1c0c11b3e622dc91e3c4516bdaea3510be
 static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_measure_subscribe, handle_msg_subscribe }

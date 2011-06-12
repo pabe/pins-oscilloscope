@@ -9,15 +9,27 @@
 #include "stm3210c_eval_ioe.h"
 #include "stm32f10x_adc.h"
 
+
 #include "api_controller.h"
 #include "api_measure.h"
 #include "api_watchdog.h"
 #include "ipc.h"
 #include "task_measure.h"
 
+
+#if USE_TIMER
+#include "semphr.h"
+#include "misc.h"
+#include "stm32f10x_tim.h"
+#include "stm32f10x_rcc.h"
+#endif
+
 int samplerate = 50;  //FIX!
 OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
 
+#if USE_TIMER
+xSemaphoreHandle interruptSignal;
+#endif
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *cmd);
 portBASE_TYPE send_data(
@@ -26,6 +38,9 @@ portBASE_TYPE send_data(
     int timestamp);
 
 /* private variables */
+
+int testIntForISR;
+
 static ipc_subscribe_msg_t data[NUMBER_OF_CHANNELS];
 static ipc_subscribe_msg_t rate[NUMBER_OF_CHANNELS];
 static const ipc_loop_t msg_handle_table[] =
@@ -113,7 +128,11 @@ void measureTask (void* params)
 {
 	int  packetCounter, i;
 	uint16_t adc_value;
+
 	packetCounter = 0;
+
+	testIntForISR = 0;
+	
   
   /* subscribe related initializing */
   assert(sizeof(data)/sizeof(data[0]) == sizeof(rate)/sizeof(rate[0]));
@@ -136,6 +155,10 @@ void measureTask (void* params)
 
   while(1)
   {
+	//if (testIntForISROld != testIntForISR)
+	//printf("%d", testIntForISR);
+
+
     if(pdTRUE == ipc_get(
           ipc_measure,
           (100 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
@@ -160,28 +183,15 @@ void measureTask (void* params)
 
         send_data(input_channel0,data,fakedata_counter);
         fakedata_counter+=CONFIG_SAMPLE_BUFFER_SIZE;
-        if(fakedata_next >= 4000)
+        if(fakedata_next >= 400)
           dir = -1;
         else if(fakedata_next <= 50)
           dir = 1;
       }
 
-#if 0
-		for (i = 0; i < NUMBER_OF_CHANNELS;i++){
-			setSubscribe(1, oChan[i].inputChannel);  //Should be set by value from ipc FIX
-			setSampleRate(samplerate, oChan[i].inputChannel); //Should be set by value from ipc FIX
-
-			if(oChan[i].active){ 
-
-				adc_value = readChannel(oChan[i]);
-				//printf("%.2f ", voltageConversion(adc_value));
-				send_data(oChan[i].inputChannel,adc_value,packetCounter);
-				packetCounter++;
-			}
-		}
-#endif
 
 
+	//FIX REAL DATA
 
     }
     else
@@ -219,37 +229,10 @@ portBASE_TYPE send_data(
   return pdTRUE;
 }
 
-#if 0
-void measureTaskOld (void* params) {
-	int  packetCounter, i;
-	//oscilloscope_input_t i;
-    uint16_t adc_value;
-    portTickType xLastWakeTime;
-    portTickType xFrequency = herzToTicks(samplerate);
-	packetCounter = 0;
 
-	for(;;){
-		xLastWakeTime = xTaskGetTickCount();
-		for (i = 0; i < NUMBER_OF_CHANNELS;i++){
-			setSubscribe(1, oChan[i].inputChannel);  //Should be set by value from ipc FIX
-			setSampleRate(samplerate, oChan[i].inputChannel); //Should be set by value from ipc FIX
 
-			if(oChan[i].active){ 
 
-				adc_value = readChannel(oChan[i]);
-				//printf("%.2f ", voltageConversion(adc_value));
-				ipc_controller_send_data(oChan[i].inputChannel,adc_value,packetCounter);
-				packetCounter++;
-			}
-		}
-	//printf("xLastWakeTime %d \n", xLastWakeTime);
-	vTaskDelayUntil( &xLastWakeTime, xFrequency );	
-	}
-}
-#endif
-  void measureInit(void) {
-  //void measureInit(unsigned portBASE_TYPE uxPriority) {
- 
+void ADCInit(OscilloscopeChannel oChan){
  /* ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;	 // no dual ADC
   ADC_InitStructure.ADC_ScanConvMode = ENABLE;           // read from the channel(s) configured below
   ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;	 // one-shot conversion
@@ -261,18 +244,91 @@ void measureTaskOld (void* params) {
   ADC_Init(ADC1, &ADC_InitStructure);*/
 
   /* Power up the ADC */
-  ADC_Cmd(ADC1, ENABLE);
+  ADC_Cmd(oChan.ADC, ENABLE);
 
-  /* Enable ADC1 reset calibaration register */   
-  ADC_ResetCalibration(ADC1);
+  /* Enable ADC reset calibaration register */   
+  ADC_ResetCalibration(oChan.ADC);
   /* Check the end of ADC1 reset calibration register */
-  while(ADC_GetResetCalibrationStatus(ADC1));
+  while(ADC_GetResetCalibrationStatus(oChan.ADC));
 
-  /* Start ADC1 calibaration */
-  ADC_StartCalibration(ADC1);
-  /* Check the end of ADC1 calibration */
-  while(ADC_GetCalibrationStatus(ADC1));
+  /* Start ADC calibaration */
+  ADC_StartCalibration(oChan.ADC);
+  /* Check the end of ADC calibration */
+  while(ADC_GetCalibrationStatus(oChan.ADC));
 
+
+}
+#if USE_TIMER
+
+
+void scheduledInterruptTask (void* params) {
+  for (;;) {
+    xSemaphoreTake(interruptSignal, portMAX_DELAY);
+	printf("External interrupt");
+  }
+}
+
+
+
+
+void vTimer2IntHandler(void) {
+
+  portBASE_TYPE higherPrio;
+
+  // This will fail if the semaphore has already been given.
+  // I.e., in this case an event might be dropped
+  //
+  // NB: it is not allowed to use the normal function
+  //     xSemaphoreGive within an ISR!
+  xSemaphoreGiveFromISR(interruptSignal, &higherPrio);
+
+  // Clear pending-bit of interrupt
+  TIM_ClearITPendingBit( TIM2, TIM_IT_Update );
+
+  // FreeRTOS macro to signal the end of ISR
+  portEND_SWITCHING_ISR(higherPrio);
+}
+
+
+
+void TimerInit(void){
+
+TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+NVIC_InitTypeDef NVIC_InitStructure;
+
+  RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM2, ENABLE );
+  /* Initialise data. */
+  TIM_DeInit( TIM2 );
+  TIM_TimeBaseStructInit( &TIM_TimeBaseStructure );
+
+  /* Configuration of timer 2. This timer will generate an
+     overflow/update interrupt (TIM2_IRQChannel) every 0.1s */
+  TIM_TimeBaseStructure.TIM_Period = ( unsigned portSHORT ) ( 9999 );
+  TIM_TimeBaseStructure.TIM_Prescaler = 720;
+  TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+  TIM_TimeBaseInit( TIM2, &TIM_TimeBaseStructure );
+  TIM_ARRPreloadConfig( TIM2, ENABLE );
+
+
+
+  /* Configuration of the interrupt */
+  NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init( &NVIC_InitStructure );       
+  
+  TIM_ITConfig( TIM2, TIM_IT_Update, ENABLE );
+
+  TIM_Cmd( TIM2, ENABLE );
+
+
+}
+#endif
+
+
+  void measureInit(void) {
+//
 
  if(NUMBER_OF_CHANNELS != 2){
 		assert(0);} //this need to be generalized if other amount of chans is needed;
@@ -290,5 +346,14 @@ void measureTaskOld (void* params) {
 	 oChan[1].inputChannel = input_channel1;
      oChan[1].rate=50;
 	 oChan[1].active=1;
+
+  
+ 	 ADCInit(oChan[0]);
+#if USE_TIMER
+	 TimerInit();
+#endif
+
+
+
 
 }

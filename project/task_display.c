@@ -27,7 +27,6 @@ static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_subscribe_mode,         handle_msg_subscribe_mode },
   { msg_id_subscribe_measure_data, handle_msg_subscribe_measure_data },
-  { msg_id_subscribe_measure_rate, handle_msg_subscribe_measure_rate },
   { msg_id_display_cmd,            handle_msg_cmd },
   { msg_id_display_toggle_channel, handle_msg_toggle_channel }
 };
@@ -37,8 +36,6 @@ void task_display(void *args)
   ipc_controller_subscribe(ipc_display, ipc_controller_variable_mode);
   ipc_measure_subscribe(ipc_display,    ipc_measure_variable_data_ch0);
   ipc_measure_subscribe(ipc_display,    ipc_measure_variable_data_ch1);
-  ipc_measure_subscribe(ipc_display,    ipc_measure_variable_rate_ch0);
-  ipc_measure_subscribe(ipc_display,    ipc_measure_variable_rate_ch1);
 
 	while(1)
   {
@@ -120,24 +117,6 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
   return pdTRUE;
 }
 
-static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *data)
-{
-  switch(data->subscribe_measure_rate.ch)
-  {
-    case input_channel0:
-    case input_channel1:
-      printf("|D: RATE(%i)=%u| ",
-          data->subscribe_measure_rate.ch,
-          data->subscribe_measure_rate.rate);
-      break;
-
-    default:
-      return pdFALSE;
-  }
-
-	return pdTRUE;
-}
-
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
 {
   switch(data->display_cmd)
@@ -175,6 +154,7 @@ void display_redraw(void) {
 	switch(display_mode) {
 		case oscilloscope_mode_oscilloscope:
 			// Draw interface
+			display_buttons();
 
 			// Redraw buffers
 			for(channel = 0; channel < NUMBER_OF_CHANNELS; channel++) {
@@ -187,6 +167,8 @@ void display_redraw(void) {
 			break;
 		case oscilloscope_mode_multimeter:
 			// Draw interface
+			display_buttons();
+
 			// Output last measurement?
 			break;
 		default:
@@ -219,6 +201,8 @@ void display_sample(char channel, uint16_t sample) {
 		// Draw new pixel
 		case oscilloscope_mode_oscilloscope:
 			// Remove old pixel
+			xSemaphoreTake(lcdLock, portMAX_DELAY);
+
 			//GLCD_setTextColor(Black);
 			GLCD_setTextColor(White);
 			display_show_analog(display_index(channel), display_buffer[display_index(channel)][channel]);
@@ -226,6 +210,8 @@ void display_sample(char channel, uint16_t sample) {
 			// Display new pixel
 			GLCD_setTextColor(channel ? Green : Magenta);
 			display_show_analog(display_index(channel), sample);
+
+			xSemaphoreGive(lcdLock);
 
 			// Update buffer
 			display_buffer[display_index(channel)][channel] = sample;
@@ -244,6 +230,8 @@ void display_sample(char channel, uint16_t sample) {
 }
 
 void display_show_analog(uint16_t x, uint16_t y) {
+	// REMEMBER TO GRAB LOCK BEFORE CALLING!
+	
 	// Stupid display has all messed up coordinate system :/
 	// We pretend this is not the case...
 	//          <- y
@@ -254,25 +242,54 @@ void display_show_analog(uint16_t x, uint16_t y) {
 	// +-----------+
 	uint16_t disx = (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT) - y / (ADC_MAX / (DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT));
 	uint16_t disy = DISPLAY_X_RES - x;
-	xSemaphoreTake(lcdLock, portMAX_DELAY);
 	GLCD_putPixel(disx,disy);
-	xSemaphoreGive(lcdLock);
 }
 
 void setup_buttons(void){
-  int i;
-  char* btn_strings[] = {"Mode","+","-","CH 1", "CH 2"}; 
+	int i;
+	char* btn_strings[] = {"M","-","+","A", "B"}; 
 
-  for (i=0; i<NUM_MENU_BUTTONS;i++){ //Button 0 is screen!
-  buttons[i+1].upper = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT;
-  buttons[i+1].lower = DISPLAY_Y_RES;
-  buttons[i+1].left = DISPLAY_X_RES - i *	DISPLAY_X_RES / NUM_MENU_BUTTONS;
-  buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
-  buttons[i+1].text =	btn_strings[i-1];
-  }
-  printf("");
+	/*Setup screen button*/
+		buttons[0].upper = 0+5;
+		buttons[0].lower = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT - 10;// 5 Padding btw menu screen
+		buttons[0].left = DISPLAY_X_RES-5; 
+		buttons[0].right = 0+5;
+		buttons[0].text = "";
+
+	for (i=0; i<NUM_MENU_BUTTONS;i++){ //Button 0 is screen!
+		buttons[i+1].upper = DISPLAY_Y_RES - DISPLAY_MENU_HEIGHT+1;
+		buttons[i+1].lower = DISPLAY_Y_RES;
+		buttons[i+1].left = DISPLAY_X_RES - i *	DISPLAY_X_RES / NUM_MENU_BUTTONS;
+		//buttons[i+1].right = DISPLAY_X_RES - DISPLAY_X_RES / NUM_MENU_BUTTONS - i * DISPLAY_X_RES / NUM_MENU_BUTTONS;
+		buttons[i+1].right = DISPLAY_X_RES - (1+i) * DISPLAY_X_RES / NUM_MENU_BUTTONS;
+		buttons[i+1].text =	btn_strings[i];
+	}
 };
 
 Pbutton get_button(u16 btn){
 	return &buttons[btn];
+}
+
+void display_button(int button) {
+	xSemaphoreTake(lcdLock, portMAX_DELAY);
+	GLCD_setTextColor(Black);
+	GLCD_drawRect(buttons[button].upper, buttons[button].right, buttons[button].lower-buttons[button].upper, buttons[button].left-buttons[button].right);
+	GLCD_displayChar(buttons[button].upper + 10, buttons[button].right + 20, *(buttons[button].text));
+	xSemaphoreGive(lcdLock);
+}
+
+void display_buttons(void) {
+	int i;
+	switch(display_mode) {
+		case oscilloscope_mode_oscilloscope:
+			for(i = 0; i<NUM_MENU_BUTTONS; i++)
+				display_button(i+1);
+			break;
+		case oscilloscope_mode_multimeter:
+			//Print buttons of interest
+			break;
+		default:
+			//Whoops?
+			break;
+	}
 }

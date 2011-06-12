@@ -228,17 +228,20 @@ int main( void )
   } 
  
   //xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL); 
-  xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
+  //xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
   //xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL); 
   //xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL); 
-  xTaskCreate(task_controller, "Controller", 1000, NULL, 1, NULL); 
-  xTaskCreate(task_watchdog, "Watchdog driver", 1000, NULL, 1, NULL); 
-  xTaskCreate(task_input_gpio, "Input driver for GPIO", 1000, NULL, 1, NULL); 
-  xTaskCreate(task_input_touch, "Input driver for touchscreen", 1000, NULL, 1, NULL); 
-  xTaskCreate(task_display, "Display", 1000, NULL, 1, NULL); 
-  xTaskCreate( measureTask , "Measure", 1000, NULL, 1, NULL); 
  
-  printf("Setup complete ");  // this is redirected to the display 
+  xTaskCreate(task_controller, "Controller", 100, NULL, 1, NULL); 
+  xTaskCreate(task_watchdog, "Watchdog driver", 100, NULL, 1, NULL); 
+  xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL); 
+  xTaskCreate(task_input_touch, "Input driver for touchscreen", 100, NULL, 1, NULL); 
+  xTaskCreate(task_display, "Display", 100, NULL, 1, NULL); 
+  xTaskCreate( measureTask , "Measure", 100, NULL, 1, NULL); 
+#if USE_TIMER
+  xTaskCreate( scheduledInterruptTask , "Measure", 100, NULL, 1, NULL); 
+#endif
+//  printf("Setup complete ");  // this is redirected to the display 
  
   vTaskStartScheduler(); 
  

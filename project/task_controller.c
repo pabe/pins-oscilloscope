@@ -115,11 +115,11 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
       break;
 
     case controller_cmd_time_axis_increase:
-      printf("|C: AXIS_INC| ");
+//      printf("|C: AXIS_INC| ");
       break;
       
     case controller_cmd_time_axis_decrease:
-      printf("|C: AXIS_DEC| ");
+//      printf("|C: AXIS_DEC| ");
       break;
       
     default:
@@ -134,9 +134,9 @@ static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *
   {
     case input_channel0:
     case input_channel1:
-      printf("|C: RATE(%i)=%u| ",
-          data->subscribe_measure_rate.ch,
-          data->subscribe_measure_rate.rate);
+//      printf("|C: RATE(%i)=%u| ",
+//          data->subscribe_measure_rate.ch,
+//          data->subscribe_measure_rate.rate);
       break;
 
     default:

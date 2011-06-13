@@ -82,8 +82,7 @@ typedef struct
       {
         ipc_measure_variable_data_ch0,
         ipc_measure_variable_data_ch1,
-        ipc_measure_variable_rate_ch0,
-        ipc_measure_variable_rate_ch1
+        ipc_measure_variable_rate,
       } variable;
       ipc_addr_t subscriber;
     } measure_subscribe;

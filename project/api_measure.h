@@ -15,7 +15,6 @@ typedef enum msg_measure_subscribe_variable
 
 extern xQueueHandle ipc_measure;
 
-
 portBASE_TYPE ipc_measure_subscribe(
     ipc_addr_t subscriber,
     msg_measure_subscribe_variable_t var);

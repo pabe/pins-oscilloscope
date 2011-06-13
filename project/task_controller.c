@@ -45,10 +45,10 @@ static const ipc_subscribe_table_t ipc_subscribe_table[] =
 void task_controller(void *p)
 {
   ipc_subscribe_init(&mode, msg_id_subscribe_mode);
-  update_mode(oscilloscope_mode_multimeter);
+  update_mode(oscilloscope_mode_oscilloscope);
+//  update_mode(oscilloscope_mode_multimeter);
 
-  ipc_measure_subscribe(ipc_controller, ipc_measure_variable_rate_ch0);
-  ipc_measure_subscribe(ipc_controller, ipc_measure_variable_rate_ch1);
+  ipc_measure_subscribe(ipc_controller, ipc_measure_variable_rate);
 
   while(1)
   {

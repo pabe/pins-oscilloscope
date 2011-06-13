@@ -1,48 +1,35 @@
 #include <stdio.h>
 
-/* Scheduler includes. */
+#include "setup.h"
+#include "stm32f10x_adc.h"
+#include "stm32f10x_tim.h"
+#include "stm32f10x_rcc.h"
+#include "assert.h"
+#include "misc.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
-#include "setup.h"
-#include "assert.h"
 #include "queue.h"
-#include "stm3210c_eval_ioe.h"
-#include "stm32f10x_adc.h"
-
 
 #include "api_controller.h"
 #include "api_measure.h"
 #include "api_watchdog.h"
 #include "ipc.h"
 #include "task_measure.h"
-
-
-#if USE_TIMER
-#include "semphr.h"
-#include "misc.h"
-#include "stm32f10x_tim.h"
-#include "stm32f10x_rcc.h"
-#endif
-
-int samplerate = 50;  //FIX!
-OscilloscopeChannel oChan[NUMBER_OF_CHANNELS];
-
-#if USE_TIMER
-xSemaphoreHandle interruptSignal;
-#endif
+  
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *cmd);
+static void timer_cfg(uint16_t prescaler, uint16_t period);
 portBASE_TYPE send_data(
     oscilloscope_input_t ch,
     uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE],
     int timestamp);
 
 /* private variables */
-
-int testIntForISR;
-
+static xQueueHandle irq_transfer;
 static ipc_subscribe_msg_t data[NUMBER_OF_CHANNELS];
-static ipc_subscribe_msg_t rate[NUMBER_OF_CHANNELS];
+static ipc_subscribe_msg_t rate;
+static uint16_t read_channel(oscilloscope_input_t ch);
 static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_measure_subscribe, handle_msg_subscribe }
@@ -52,146 +39,123 @@ static const ipc_subscribe_table_t ipc_subscribe_table[] =
 {
   IPC_SUBSCRIBE_TABLE_INIT(data+0, ipc_measure_variable_data_ch0, measure_subscribe),
   IPC_SUBSCRIBE_TABLE_INIT(data+1, ipc_measure_variable_data_ch1, measure_subscribe),
-  IPC_SUBSCRIBE_TABLE_INIT(rate+0, ipc_measure_variable_rate_ch0, measure_subscribe),
-  IPC_SUBSCRIBE_TABLE_INIT(rate+1, ipc_measure_variable_rate_ch1, measure_subscribe)
+  IPC_SUBSCRIBE_TABLE_INIT(&rate,  ipc_measure_variable_rate,     measure_subscribe)
 };
 
-
-portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel){
-	int cntr = 0;
- 	while(cntr < NUMBER_OF_CHANNELS){
-		if(oChan[cntr].inputChannel == channel)
-			oChan[cntr].rate=rate;
-		cntr++;
- 	}
- 	return pdTRUE;;
-} 
-
-int getSampleRate(oscilloscope_input_t channel){
-	int cntr = 0;
- 	while(cntr < NUMBER_OF_CHANNELS){
-		if(oChan[cntr].inputChannel == channel)
-			 return oChan[cntr].rate;
-		cntr++;
- 	}
- 	return -1;
-} 
-
-portBASE_TYPE setSubscribe(int subscribe, oscilloscope_input_t channel){
-	
-	int cntr = 0;
-	while(cntr < NUMBER_OF_CHANNELS){
-		if(oChan[cntr].inputChannel == channel)
-			oChan[cntr].subscribed=subscribe;
-		cntr++;
- 	}
- 	return pdTRUE;;
-} 
-
-int getSubscribe(oscilloscope_input_t channel){
-	
-	int cntr = 0;
-	while(cntr < NUMBER_OF_CHANNELS){
-		if(oChan[cntr].inputChannel == channel)
-			return oChan[cntr].subscribed;
-		cntr++;
- 	}
- 	return -1;
-} 
-
-portTickType herzToTicks(int samplerate){
-		 double period_in_MS;
-		 if (samplerate == 0)
-		 	assert(0); //Division by zero
-		 period_in_MS = 1000.0/(double)samplerate ;
-		 return (portTickType)period_in_MS / portTICK_RATE_MS;
-}
-
-uint16_t readChannel(OscilloscopeChannel OChannel){
-		ADC_RegularChannelConfig(OChannel.ADC,OChannel.ADC_Channel, 1, ADC_SampleTime_239Cycles5);
-		ADC_ClearFlag(OChannel.ADC, ADC_FLAG_EOC);
-		ADC_SoftwareStartConvCmd(OChannel.ADC, ENABLE);
-		while (!ADC_GetFlagStatus(OChannel.ADC, ADC_FLAG_EOC));			
-		return ADC_GetConversionValue(OChannel.ADC);
-	
-}	
-
-uint16_t foo_data;
-void measureTask (void* params)
+/* public functions */
+typedef struct
 {
-	int  packetCounter, i;
-	uint16_t adc_value;
+  uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE];
+  oscilloscope_input_t ch;
+  int timestamp;
+} data_t;
 
-	packetCounter = 0;
+portBASE_TYPE task_measure_init(void)
+{
+  int i;
+  assert(!irq_transfer);
 
-	testIntForISR = 0;
-	
-  
+  irq_transfer = xQueueCreate(CONFIG_MEASURE_IRQ_QUEUE_LEN, sizeof(data_t));
+  if(!irq_transfer)
+    return pdFALSE;
+
   /* subscribe related initializing */
-  assert(sizeof(data)/sizeof(data[0]) == sizeof(rate)/sizeof(rate[0]));
   for(i=0; i<sizeof(data)/sizeof(data[0]); i++)
   {
     ipc_subscribe_init(data + i, msg_id_subscribe_measure_data);
-    ipc_subscribe_init(rate + i, msg_id_subscribe_measure_rate);
-//    data[i].msg.data.subscribe_measure_data.data = { 0 };
-//    data[i].msg.data.subscribe_measure_data.timestamp = 0;
-    rate[i].msg.data.subscribe_measure_rate.rate = 0;
   }
+  ipc_subscribe_init(&rate, msg_id_subscribe_measure_rate);
+  rate.msg.data.subscribe_measure_rate.rate = 0;
 
-  /* this needs manual update */
+  /* this needs manual update if number if channels change */
   assert(sizeof(data)/sizeof(data[0]) == 2);
 
   data[0].msg.data.subscribe_measure_data.ch = input_channel0;
   data[1].msg.data.subscribe_measure_data.ch = input_channel1;
-  rate[0].msg.data.subscribe_measure_rate.ch = input_channel0;
-  rate[1].msg.data.subscribe_measure_rate.ch = input_channel1;
+
+
+  /* lets init the adc! */
+  ADC_Cmd(ADC1, ENABLE);
+
+  /* Enable ADC reset calibaration register */   
+  ADC_ResetCalibration(ADC1);
+  /* Check the end of ADC1 reset calibration register */
+  while(ADC_GetResetCalibrationStatus(ADC1));
+
+  /* Start ADC calibaration */
+  ADC_StartCalibration(ADC1);
+  /* Check the end of ADC calibration */
+  while(ADC_GetCalibrationStatus(ADC1));
+//  TimerInit(5,5000);
+  timer_cfg(50,5000);
+
+  return pdTRUE;
+}
+
+void task_measure_cmd(void* params)
+{
+  assert(ipc_measure);
 
   while(1)
   {
-	//if (testIntForISROld != testIntForISR)
-	//printf("%d", testIntForISR);
-
-
     if(pdTRUE == ipc_get(
           ipc_measure,
-          /*portMAX_DELAY*/(1000 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
+          portMAX_DELAY,
           msg_handle_table,
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
-#if 0
-      int i;
-      for(i=0; i<1; i++)
-      {
-        static int dir = 1;
-        static uint16_t fakedata_next = 1;
-        static int fakedata_counter = 0;
-        int j;
-        uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE];
-        
-        for(j=0;j<CONFIG_SAMPLE_BUFFER_SIZE;j++)
-        {
-//          data[j] = 1000;
-          data[j] = fakedata_next;
-          fakedata_next += 35*dir;
-        }
-
-        send_data(input_channel0,data,fakedata_counter);
-        fakedata_counter+=CONFIG_SAMPLE_BUFFER_SIZE;
-        if(fakedata_next >= 400)
-          dir = -1;
-        else if(fakedata_next <= 50)
-          dir = 1;
-      }
-
-#endif
-
-	//FIX REAL DATA
-
+      /* never timeout */
+      ipc_watchdog_signal_error(0);
     }
     else
     {    
       ipc_watchdog_signal_error(0);
     }
+  }
+}
+
+void task_measure(void* params)
+{
+  static data_t buffer;
+  /* 
+   * buffer is stack so we do not waste stack,
+   * so no more than one instance of task_measure() please!
+   */
+  
+  assert(irq_transfer);
+  while(1)
+  {
+    xQueueReceive(irq_transfer, &buffer, portMAX_DELAY);
+    send_data(buffer.ch, buffer.data, buffer.timestamp);
+  }
+}
+
+/* public (unofficial) functions */
+void TIM2_IRQHandler(void)
+{
+  portBASE_TYPE xTaskWokenByPost = pdFALSE;
+  static data_t buffer[] =
+  {
+    { { 0 }, input_channel0, 0 }
+  };
+  static unsigned i = 0;
+
+  TIM_ClearITPendingBit( TIM2, TIM_IT_Update );
+        
+  buffer[0].data[i] = read_channel(buffer[0].ch);
+  i++;
+
+  if(i == API_MEASURE_DATA_CHUNK_SIZE)
+  {
+    i = 0;
+    xQueueSendToFrontFromISR(
+        irq_transfer,
+        &buffer+0,
+        &xTaskWokenByPost);
+    buffer[0].timestamp += API_MEASURE_DATA_CHUNK_SIZE;
+
+    if(xTaskWokenByPost)
+      taskYIELD();
   }
 }
 
@@ -204,16 +168,41 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
       sizeof(ipc_subscribe_table)/sizeof(ipc_subscribe_table[0]));
 }
 
-#include <string.h>
+static void timer_cfg(uint16_t prescaler, uint16_t period)
+{
+  TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+  NVIC_InitTypeDef NVIC_InitStructure;
+  RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM2, ENABLE );
+  
+  /* Initialise data. */
+  TIM_DeInit( TIM2 );
+  TIM_TimeBaseStructInit( &TIM_TimeBaseStructure );
+
+  TIM_TimeBaseStructure.TIM_Period = period;
+  TIM_TimeBaseStructure.TIM_Prescaler = prescaler;
+  TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+  TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+  TIM_TimeBaseInit( TIM2, &TIM_TimeBaseStructure );
+  TIM_ARRPreloadConfig( TIM2, ENABLE );
+
+  /* Configuration of the interrupt */
+  NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure );       
+  
+  TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+
+  TIM_Cmd(TIM2, ENABLE);
+}
+
 portBASE_TYPE send_data(
     oscilloscope_input_t ch,
     uint16_t value[CONFIG_SAMPLE_BUFFER_SIZE],
     int timestamp)
 {
   ipc_measure_put_data(value, timestamp);
-//  memcpy(data[ch].msg.data.subscribe_measure_data.data, value, sizeof(uint16_t)*CONFIG_SAMPLES_PER_PACKET);
-//  data[ch].msg.data.subscribe_measure_data.data = value;
-//  data[ch].msg.data.subscribe_measure_data.timestamp = timestamp;
   if(pdFALSE == ipc_subscribe_execute(data + ch))
   {
     ipc_watchdog_signal_error(0);
@@ -223,151 +212,34 @@ portBASE_TYPE send_data(
   return pdTRUE;
 }
 
-
-
-
-void ADCInit(OscilloscopeChannel oChan){
- /* ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;	 // no dual ADC
-  ADC_InitStructure.ADC_ScanConvMode = ENABLE;           // read from the channel(s) configured below
-  ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;	 // one-shot conversion
-  ADC_InitStructure.ADC_ExternalTrigConv =				 // we only trigger conversion internally
-  ADC_ExternalTrigConv_None;							 
-  ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right; // store result in least significant bits
-
-  ADC_InitStructure.ADC_NbrOfChannel = 1;                // only read from one channel at a time
-  ADC_Init(ADC1, &ADC_InitStructure);*/
-
-  /* Power up the ADC */
-  ADC_Cmd(oChan.ADC, ENABLE);
-
-  /* Enable ADC reset calibaration register */   
-  ADC_ResetCalibration(oChan.ADC);
-  /* Check the end of ADC1 reset calibration register */
-  while(ADC_GetResetCalibrationStatus(oChan.ADC));
-
-  /* Start ADC calibaration */
-  ADC_StartCalibration(oChan.ADC);
-  /* Check the end of ADC calibration */
-  while(ADC_GetCalibrationStatus(oChan.ADC));
-
-
-}
-#if USE_TIMER
-
-
-xQueueHandle ipc_lulz;
-
-static  uint16_t msg[CONFIG_SAMPLE_BUFFER_SIZE];
-void task_measure_irq_data(void* params)
+/*
+ * NOTE: No protection, should only be called from ISR
+ */
+static uint16_t read_channel(oscilloscope_input_t ch)
 {
-  int co=0;
-  while(1)
+  uint8_t real_ch;
+  switch(ch)
   {
-    xQueueReceive(ipc_lulz, msg, portMAX_DELAY);
-    send_data(input_channel0,msg,co);
-    co+= CONFIG_SAMPLE_BUFFER_SIZE;
+    case input_channel0:
+      real_ch = ADC_Channel_7;
+      break;
+
+    case input_channel1:
+      real_ch = ADC_Channel_8;
+      break;
+
+    default:
+      ipc_watchdog_signal_error(0);
+      return UINT16_MAX;
   }
-}
-
-
-
-
-void TIM2_IRQHandler(void)
-{
-  portBASE_TYPE xTaskWokenByPost = pdFALSE;
-  static uint16_t adc_value[CONFIG_SAMPLE_BUFFER_SIZE];
-  static unsigned i = 0;
-
-  TIM_ClearITPendingBit( TIM2, TIM_IT_Update );
-        
-  adc_value[i] = readChannel(oChan[0]);
-  i++;
-  if(i == CONFIG_SAMPLE_BUFFER_SIZE)
-  {
-    i=0;
-    xQueueSendToFrontFromISR(
-        ipc_lulz,
-        adc_value,
-        &xTaskWokenByPost);
-
-    if(xTaskWokenByPost)
-      taskYIELD();
-  }
-}
-
-
-
-
-void TimerInit(void){
-
-TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-NVIC_InitTypeDef NVIC_InitStructure;
-//interruptSignal = xSemaphoreCreateMutex();
-vSemaphoreCreateBinary(interruptSignal);
-ipc_lulz=xQueueCreate(2, sizeof(uint16_t)*CONFIG_SAMPLE_BUFFER_SIZE);
-  RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM2, ENABLE );
-  /* Initialise data. */
-  TIM_DeInit( TIM2 );
-  TIM_TimeBaseStructInit( &TIM_TimeBaseStructure );
-
-  /* Configuration of timer 2. This timer will generate an
-     overflow/update interrupt (TIM2_IRQChannel) every 0.1s */
-  TIM_TimeBaseStructure.TIM_Period = ( unsigned portSHORT ) ( 9999 );
-  TIM_TimeBaseStructure.TIM_Period = ( unsigned portSHORT ) ( 5000 );
-  TIM_TimeBaseStructure.TIM_Prescaler = 720;
-  TIM_TimeBaseStructure.TIM_Prescaler = 13000;
-  TIM_TimeBaseStructure.TIM_Prescaler = 500;
-  TIM_TimeBaseStructure.TIM_Prescaler = 5;
-  TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-  TIM_TimeBaseInit( TIM2, &TIM_TimeBaseStructure );
-  TIM_ARRPreloadConfig( TIM2, ENABLE );
-
-
-
-  /* Configuration of the interrupt */
-  NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init( &NVIC_InitStructure );       
   
-  TIM_ITConfig( TIM2, TIM_IT_Update, ENABLE );
+  ADC_RegularChannelConfig(ADC1, real_ch, 1, ADC_SampleTime_239Cycles5);
+  ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
+  ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 
-  TIM_Cmd( TIM2, ENABLE );
+  /* spin until we have data */
+  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));			
 
+  return ADC_GetConversionValue(ADC1);
+}	
 
-}
-#endif
-
-
-  void measureInit(void) {
-    printf("lol ");
-//
-
- if(NUMBER_OF_CHANNELS != 2){
-		assert(0);} //this need to be generalized if other amount of chans is needed;
-									   
-	 oChan[0].ADC=ADC1;
-	 oChan[0].ADC_Channel=ADC_Channel_7;
-     oChan[0].subscribed=	0;
-	 oChan[0].inputChannel = input_channel0;
-     oChan[0].rate=50;
-	 oChan[0].active=1;
-
-	 oChan[1].ADC=ADC1;
-	 oChan[1].ADC_Channel=ADC_Channel_8;
-     oChan[1].subscribed=	0;
-	 oChan[1].inputChannel = input_channel1;
-     oChan[1].rate=50;
-	 oChan[1].active=1;
-
-  
- 	 ADCInit(oChan[0]);
-#if USE_TIMER
-	 TimerInit();
-#endif
-
-
-
-
-}

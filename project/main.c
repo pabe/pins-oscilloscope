@@ -218,15 +218,18 @@ int main( void )
  
   setup_buttons();
   initDisplay();  
-  measureInit(); 
   ipc_measure_init();
 
    
   if(pdFALSE == ipc_init()) 
   { 
-    /* TODO: Output error mesg? */ 
     ipc_watchdog_signal_error(0);
-  } 
+  }
+
+  if(pdFALSE == task_measure_init())
+  { 
+    ipc_watchdog_signal_error(0);
+  }
  
   //xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL); 
   xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
@@ -238,10 +241,8 @@ int main( void )
   xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL); 
   xTaskCreate(task_input_touch, "Input driver for touchscreen", 100, NULL, 1, NULL); 
   xTaskCreate(task_display, "Display", 100, NULL, 1, NULL); 
-  xTaskCreate( measureTask , "Measure", 100, NULL, 1, NULL); 
-#if USE_TIMER
-  xTaskCreate( task_measure_irq_data , "Measure2", 100, NULL, 1, NULL); 
-#endif
+  xTaskCreate(task_measure_cmd, "ADC-driver: controller", 100, NULL, 1, NULL); 
+  xTaskCreate(task_measure, "ADC-driver: IRQ interface", 100, NULL, 1, NULL); 
 //  printf("Setup complete ");  // this is redirected to the display 
  
   vTaskStartScheduler(); 

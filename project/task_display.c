@@ -81,6 +81,7 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 	return pdTRUE;
 }
 
+	static	uint16_t data2[CONFIG_SAMPLE_BUFFER_SIZE];
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
 {
 	int channel;
@@ -108,13 +109,12 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
 	// Fall through to here if all is well
 	{
 		int i;
-		uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE];
 		int timestamp;
-		ipc_measure_get_data(data, &timestamp);
+		ipc_measure_get_data(data2, &timestamp);
 
 		for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
 		{
-			display_new_measure(channel, data[i], timestamp+i);
+      display_new_measure(channel, data2[i], timestamp+i);
 		}
 	}
 
@@ -161,6 +161,7 @@ void display_redraw(void) {
 			display_buttons();
 
 			// Redraw buffers
+#if 1
 			for(channel = 0; channel < NUMBER_OF_CHANNELS; channel++) {
 				// Check if channel active
 				if(display_buffer_enable[channel])
@@ -168,6 +169,7 @@ void display_redraw(void) {
 						display_sample(channel, display_buffer[sample][channel]);
 					}
 			}
+#endif 
 			break;
 		case oscilloscope_mode_multimeter:
 			// Draw interface
@@ -185,8 +187,6 @@ void display_new_measure(char channel, uint16_t sample, int timestamp) {
 	//printf("[%d,%d,%d=%d]", channel, sample, timestamp, display_buffer_index[channel]);
 	switch(display_mode) {
 		case oscilloscope_mode_oscilloscope: 
-			while(display_buffer_index[channel] != timestamp)
-				display_sample(channel, 0);
 			display_sample(channel, sample);
 			break;
 		case oscilloscope_mode_multimeter: 

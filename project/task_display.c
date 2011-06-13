@@ -173,6 +173,9 @@ void display_redraw(void) {
 			break;
 		case oscilloscope_mode_multimeter:
 			// Draw interface
+			xSemaphoreTake(lcdLock, portMAX_DELAY);
+			GLCD_clear(White); 	  //Is this the right place to do this?
+			xSemaphoreGive(lcdLock);
 			display_buttons();
 
 			// Output last measurement?
@@ -225,6 +228,7 @@ void display_sample(char channel, uint16_t sample) {
 
 			// Update number
 		case oscilloscope_mode_multimeter:
+			display_WriteMultimerDigit(channel, sample);
 			break;
 
 			// Whoops?
@@ -290,10 +294,44 @@ void display_buttons(void) {
 				display_button(i+1);
 			break;
 		case oscilloscope_mode_multimeter:
-			//Print buttons of interest
+			display_button(1);	  //"M"
+			display_button(4);	  //"A"
+			display_button(5);	  //"B"
 			break;
 		default:
 			//Whoops?
 			break;
 	}
 }
+
+double voltageConversion(uint16_t val){
+	double maxAdcBits = 4095.0; // Should be > 0 
+	double maxVolts = 3.3;      
+	double voltsPerBit = (maxVolts / (maxAdcBits));
+	return (double)val * voltsPerBit;
+}
+
+void display_WriteMultimerDigit(char channel, uint16_t sample) {
+char buffer[15];
+int Line = 0;
+
+	switch (channel){
+   		case  input_channel0:
+			Line = Line3;
+			sprintf (buffer, "Chan A: %.3f", voltageConversion(sample));
+			break;
+   		case  input_channel1:
+   			Line = Line4;
+			sprintf (buffer, "Chan B: %.3f", voltageConversion(sample));
+			break;
+		default:
+			//Whoops?
+		break;
+   }
+   			
+   xSemaphoreTake(lcdLock, portMAX_DELAY);
+   GLCD_setTextColor(Black);
+   GLCD_displayStringLn(Line, (unsigned char *) buffer); 
+   xSemaphoreGive(lcdLock);
+}
+

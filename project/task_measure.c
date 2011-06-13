@@ -99,14 +99,6 @@ int getSubscribe(oscilloscope_input_t channel){
  	return -1;
 } 
 
-double voltageConversion(uint16_t val){
-	double maxAdcBits = 4095.0; // Should be > 0 
-	double maxVolts = 3.3;      
-	double voltsPerBit = (maxVolts / (maxAdcBits));
-	return (double)val * voltsPerBit;
-}	
-
-
 portTickType herzToTicks(int samplerate){
 		 double period_in_MS;
 		 if (samplerate == 0)

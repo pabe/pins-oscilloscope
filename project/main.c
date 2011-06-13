@@ -37,10 +37,11 @@ static void initDisplay () {
  
   GLCD_init(); 
   GLCD_clear(White); 
-  GLCD_setTextColor(Blue); 
+/*  GLCD_setTextColor(Blue); 
   GLCD_displayStringLn(Line2, " Programming"); 
   GLCD_displayStringLn(Line3, " Embedded"); 
   GLCD_displayStringLn(Line4, " Systems"); 
+*/
 } 
 /* 
 static void lcdTask(void *params) { 

@@ -12,6 +12,7 @@ uint16_t display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS] = {0};
 int display_buffer_index[NUMBER_OF_CHANNELS] = {0};
 button buttons[NUM_BUTTONS];
 char display_buffer_enable[NUMBER_OF_CHANNELS] = {0};
+int lastWrittenTimeStamp;
 
 
 /* private functions */
@@ -155,6 +156,9 @@ static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data)
 void display_redraw(void) {
 	char channel;
 	uint16_t sample; //C89  ;__;
+	xSemaphoreTake(lcdLock, portMAX_DELAY);
+	GLCD_clear(White); 	  //Is this the right place to do this?
+	xSemaphoreGive(lcdLock);
 	switch(display_mode) {
 		case oscilloscope_mode_oscilloscope:
 			// Draw interface
@@ -173,11 +177,7 @@ void display_redraw(void) {
 			break;
 		case oscilloscope_mode_multimeter:
 			// Draw interface
-			xSemaphoreTake(lcdLock, portMAX_DELAY);
-			GLCD_clear(White); 	  //Is this the right place to do this?
-			xSemaphoreGive(lcdLock);
 			display_buttons();
-
 			// Output last measurement?
 			break;
 		default:
@@ -193,7 +193,11 @@ void display_new_measure(char channel, uint16_t sample, int timestamp) {
 			display_sample(channel, sample);
 			break;
 		case oscilloscope_mode_multimeter: 
-			display_sample(channel, sample);
+			
+			if(timestamp - lastWrittenTimeStamp > 1000){ //Should probably depend on rate.
+				display_sample(channel, sample);
+				lastWrittenTimeStamp = timestamp;
+			}
 			break;
 		default:
 			ipc_watchdog_signal_error(0);
@@ -318,11 +322,14 @@ int Line = 0;
 	switch (channel){
    		case  input_channel0:
 			Line = Line3;
-			sprintf (buffer, "Chan A: %.3f", voltageConversion(sample));
+			//sprintf (buffer, "Chan A: %.1f", voltageConversion(sample));
+			sprintf (buffer, "Chan A: %d", sample);
 			break;
    		case  input_channel1:
    			Line = Line4;
-			sprintf (buffer, "Chan B: %.3f", voltageConversion(sample));
+			//sprintf (buffer, "Chan B: %.1f", voltageConversion(sample));
+			sprintf (buffer, "Chan B: %d", sample);
+
 			break;
 		default:
 			//Whoops?

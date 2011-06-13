@@ -228,7 +228,7 @@ int main( void )
   } 
  
   //xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL); 
-  //xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
+  xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
   //xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL); 
   //xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL); 
  
@@ -239,7 +239,7 @@ int main( void )
   xTaskCreate(task_display, "Display", 100, NULL, 1, NULL); 
   xTaskCreate( measureTask , "Measure", 100, NULL, 1, NULL); 
 #if USE_TIMER
-  xTaskCreate( scheduledInterruptTask , "Measure", 100, NULL, 1, NULL); 
+  xTaskCreate( scheduledInterruptTask , "Measure2", 100, NULL, 1, NULL); 
 #endif
 //  printf("Setup complete ");  // this is redirected to the display 
  

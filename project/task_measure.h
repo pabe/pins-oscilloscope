@@ -3,7 +3,7 @@
 #include "stm32f10x_adc.h"
 #include "oscilloscope.h"
 #define NUMBER_OF_CHANNELS 2  //Number of probes on the oscilloscope
-#define USE_TIMER  0
+#define USE_TIMER  1
 #define ADC_MAX ((1<<12)-1)
 
 typedef struct {
@@ -19,6 +19,7 @@ void scheduledInterruptTask (void* params);
 #endif
 void measureInit(void);
 void measureTask (void* params);
+task_measure_irq_data(oid* params);
 portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel);
 int getSampleRate(oscilloscope_input_t channel);
 portBASE_TYPE setSubscribe(int subscribe, oscilloscope_input_t channel);

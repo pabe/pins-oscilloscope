@@ -124,6 +124,7 @@ uint16_t readChannel(OscilloscopeChannel OChannel){
 	
 }	
 
+uint16_t foo_data;
 void measureTask (void* params)
 {
 	int  packetCounter, i;
@@ -161,10 +162,11 @@ void measureTask (void* params)
 
     if(pdTRUE == ipc_get(
           ipc_measure,
-          (100 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
+          /*portMAX_DELAY*/(1000 / portTICK_RATE_MS) /*herzToTicks(samplerate)*/,
           msg_handle_table,
           sizeof(msg_handle_table)/sizeof(msg_handle_table[0])))
     {
+#if 0
       int i;
       for(i=0; i<1; i++)
       {
@@ -189,7 +191,7 @@ void measureTask (void* params)
           dir = 1;
       }
 
-
+#endif
 
 	//FIX REAL DATA
 
@@ -261,33 +263,46 @@ void ADCInit(OscilloscopeChannel oChan){
 #if USE_TIMER
 
 
-void scheduledInterruptTask (void* params) {
-  for (;;) {
-    xSemaphoreTake(interruptSignal, portMAX_DELAY);
-	printf("External interrupt");
+xQueueHandle ipc_lulz;
+
+static  uint16_t msg[CONFIG_SAMPLE_BUFFER_SIZE];
+void task_measure_irq_data(void* params)
+{
+  int co=0;
+  while(1)
+  {
+    xQueueReceive(ipc_lulz, msg, portMAX_DELAY);
+    send_data(input_channel0,msg,co);
+    co+= CONFIG_SAMPLE_BUFFER_SIZE;
   }
 }
 
 
 
 
-void vTimer2IntHandler(void) {
+void TIM2_IRQHandler(void)
+{
+  portBASE_TYPE xTaskWokenByPost = pdFALSE;
+  static uint16_t adc_value[CONFIG_SAMPLE_BUFFER_SIZE];
+  static unsigned i = 0;
 
-  portBASE_TYPE higherPrio;
-
-  // This will fail if the semaphore has already been given.
-  // I.e., in this case an event might be dropped
-  //
-  // NB: it is not allowed to use the normal function
-  //     xSemaphoreGive within an ISR!
-  xSemaphoreGiveFromISR(interruptSignal, &higherPrio);
-
-  // Clear pending-bit of interrupt
   TIM_ClearITPendingBit( TIM2, TIM_IT_Update );
+        
+  adc_value[i] = readChannel(oChan[0]);
+  i++;
+  if(i == CONFIG_SAMPLE_BUFFER_SIZE)
+  {
+    i=0;
+    xQueueSendToFrontFromISR(
+        ipc_lulz,
+        adc_value,
+        &xTaskWokenByPost);
 
-  // FreeRTOS macro to signal the end of ISR
-  portEND_SWITCHING_ISR(higherPrio);
+    if(xTaskWokenByPost)
+      taskYIELD();
+  }
 }
+
 
 
 
@@ -295,7 +310,9 @@ void TimerInit(void){
 
 TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 NVIC_InitTypeDef NVIC_InitStructure;
-
+//interruptSignal = xSemaphoreCreateMutex();
+vSemaphoreCreateBinary(interruptSignal);
+ipc_lulz=xQueueCreate(2, sizeof(uint16_t)*CONFIG_SAMPLE_BUFFER_SIZE);
   RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM2, ENABLE );
   /* Initialise data. */
   TIM_DeInit( TIM2 );
@@ -304,7 +321,11 @@ NVIC_InitTypeDef NVIC_InitStructure;
   /* Configuration of timer 2. This timer will generate an
      overflow/update interrupt (TIM2_IRQChannel) every 0.1s */
   TIM_TimeBaseStructure.TIM_Period = ( unsigned portSHORT ) ( 9999 );
+  TIM_TimeBaseStructure.TIM_Period = ( unsigned portSHORT ) ( 5000 );
   TIM_TimeBaseStructure.TIM_Prescaler = 720;
+  TIM_TimeBaseStructure.TIM_Prescaler = 13000;
+  TIM_TimeBaseStructure.TIM_Prescaler = 500;
+  TIM_TimeBaseStructure.TIM_Prescaler = 5;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit( TIM2, &TIM_TimeBaseStructure );
   TIM_ARRPreloadConfig( TIM2, ENABLE );
@@ -328,6 +349,7 @@ NVIC_InitTypeDef NVIC_InitStructure;
 
 
   void measureInit(void) {
+    printf("lol ");
 //
 
  if(NUMBER_OF_CHANNELS != 2){

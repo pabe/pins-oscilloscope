@@ -100,6 +100,7 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
 			channel = 0;
 			break;
 		case input_channel1:
+      return pdTRUE;
 			channel = 1;
 			break;
 		default:

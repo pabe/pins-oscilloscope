@@ -239,7 +239,7 @@ int main( void )
   xTaskCreate(task_display, "Display", 100, NULL, 1, NULL); 
   xTaskCreate( measureTask , "Measure", 100, NULL, 1, NULL); 
 #if USE_TIMER
-  xTaskCreate( scheduledInterruptTask , "Measure2", 100, NULL, 1, NULL); 
+  xTaskCreate( task_measure_irq_data , "Measure2", 100, NULL, 1, NULL); 
 #endif
 //  printf("Setup complete ");  // this is redirected to the display 
  

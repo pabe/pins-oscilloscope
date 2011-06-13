@@ -19,7 +19,7 @@ void scheduledInterruptTask (void* params);
 #endif
 void measureInit(void);
 void measureTask (void* params);
-task_measure_irq_data(oid* params);
+void task_measure_irq_data(void* params);
 portBASE_TYPE setSampleRate(int rate, oscilloscope_input_t channel);
 int getSampleRate(oscilloscope_input_t channel);
 portBASE_TYPE setSubscribe(int subscribe, oscilloscope_input_t channel);

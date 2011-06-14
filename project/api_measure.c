@@ -43,7 +43,7 @@ void ipc_measure_get_data(measure_data_t *data)
         data,
         CONFIG_IPC_WAIT))
   {
-    ipc_watchdog_signal_error(0);
+    //ipc_watchdog_signal_error(0);
   }
 }
 
@@ -54,6 +54,6 @@ void ipc_measure_put_data(const measure_data_t *data)
         data,
         CONFIG_IPC_WAIT))
   {
-    ipc_watchdog_signal_error(0);
+    //ipc_watchdog_signal_error(0);
   }
 }

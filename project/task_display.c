@@ -85,7 +85,7 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 	static	uint16_t data2[CONFIG_SAMPLE_BUFFER_SIZE];
 static measure_data_t data3;
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
-{
+{  if(1){
 	int channel;
 	switch(data->subscribe_measure_data.ch)
 	{
@@ -120,7 +120,8 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
       display_new_measure(data3.ch, data3.data[i], data3.timestamp+i);
 		}
 	}
-
+		 }
+	//	 ipc_measure_get_data(&data3);//FIXME FIXME
   return pdTRUE;
 }
 
@@ -129,7 +130,8 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
   switch(data->display_cmd)
   {
     case display_cmd_toggle_freeze_screen:
-      ipc_watchdog_signal_error(0);
+		printf("Freezy");
+      //ipc_watchdog_signal_error(0);
       break;
 
     default:

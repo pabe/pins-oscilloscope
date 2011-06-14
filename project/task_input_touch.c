@@ -72,6 +72,7 @@ static void btnPressOscMode(u16 btn) {
             break;
 
         case 1:
+			printf("mode");
             ipc_controller_mode_toggle();
             break;
 
@@ -104,7 +105,8 @@ static void btnPressVmMode(u16 btn) {
             break;
         case 1:
             ipc_controller_mode_toggle();
-            break;
+            printf("mode");
+			break;
 
         case 2:
 
@@ -171,14 +173,16 @@ void task_input_touch(void *p) {
 
         sleep_time = xTaskGetTickCount();
 
+		//printf("r");
         assert(ipc_input_touch);
         if (pdFALSE == xQueueReceive(ipc_input_touch, &msg, timeout)) {
             /* timeout work */
-            xSemaphoreTake(lcdLock, portMAX_DELAY);
+#if 1
+            //xSemaphoreTake(lcdLock, portMAX_DELAY);
             ts_state = IOE_TS_GetState();
-            xSemaphoreGive(lcdLock);
-
+			//printf("s%d", ts_state->TouchDetected);
             if (pressed) {
+			//printf("inside pressed");
                 if (!ts_state->TouchDetected)
                     pressed = 0;
             } else if (ts_state->TouchDetected) {
@@ -192,13 +196,14 @@ void task_input_touch(void *p) {
                 }
                 pressed = 1;
             }
-
+            //xSemaphoreGive(lcdLock);
+#endif
         } else {
             switch (msg.head.id) {
                 case msg_id_subscribe_mode:
                     //printf("| MODE: %i |", msg.data.subscribe_mode);
                     mode = msg.data.subscribe_mode;
-                    //printf("mymode:%d ", mode);
+                    printf("mm%d ", mode);
                     break;
 
                 default:

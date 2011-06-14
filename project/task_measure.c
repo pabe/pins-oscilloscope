@@ -132,8 +132,10 @@ void TIM2_IRQHandler(void)
   portBASE_TYPE xTaskWokenByPost = pdFALSE;
   static measure_data_t buffer[] =
   {
-    { { 0 }, input_channel0, 0 },
-    { { 0 }, input_channel1, 0 }
+    { { 0 }, input_channel0, 0 }
+	#if 0
+    ,{ { 0 }, input_channel1, 0 }
+	#endif
   };
   static unsigned timestamp = 0;
 

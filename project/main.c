@@ -214,7 +214,7 @@ int main( void )
   prvSetupHardware(); 
   IOE_Config(); 
  
-  printQueue = xQueueCreate(1024, 1); //FIXME MAKE SHORTER? 
+  printQueue = xQueueCreate(128, 1); //FIXME MAKE SHORTER? 
  
   setup_buttons();
   initDisplay();  
@@ -232,7 +232,7 @@ int main( void )
   }
  
   //xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL); 
-  xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
+  //xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
   //xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL); 
   //xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL); 
  

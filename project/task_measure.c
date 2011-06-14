@@ -20,10 +20,7 @@
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *cmd);
 static void timer_cfg(uint16_t prescaler, uint16_t period);
-portBASE_TYPE send_data(
-    oscilloscope_input_t ch,
-    uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE],
-    int timestamp);
+static int ch_generic2internal(oscilloscope_input_t ch);
 
 /* private variables */
 static xQueueHandle irq_transfer;
@@ -43,19 +40,12 @@ static const ipc_subscribe_table_t ipc_subscribe_table[] =
 };
 
 /* public functions */
-typedef struct
-{
-  uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE];
-  oscilloscope_input_t ch;
-  int timestamp;
-} data_t;
-
 portBASE_TYPE task_measure_init(void)
 {
   int i;
   assert(!irq_transfer);
 
-  irq_transfer = xQueueCreate(CONFIG_MEASURE_IRQ_QUEUE_LEN, sizeof(data_t));
+  irq_transfer = xQueueCreate(CONFIG_MEASURE_IRQ_QUEUE_LEN, sizeof(measure_data_t));
   if(!irq_transfer)
     return pdFALSE;
 
@@ -87,7 +77,7 @@ portBASE_TYPE task_measure_init(void)
   /* Check the end of ADC calibration */
   while(ADC_GetCalibrationStatus(ADC1));
 //  TimerInit(5,5000);
-  timer_cfg(50,5000);
+  timer_cfg(60,5000);
 
   return pdTRUE;
 }
@@ -116,7 +106,7 @@ void task_measure_cmd(void* params)
 
 void task_measure(void* params)
 {
-  static data_t buffer;
+  static measure_data_t buffer;
   /* 
    * buffer is stack so we do not waste stack,
    * so no more than one instance of task_measure() please!
@@ -126,33 +116,46 @@ void task_measure(void* params)
   while(1)
   {
     xQueueReceive(irq_transfer, &buffer, portMAX_DELAY);
-    send_data(buffer.ch, buffer.data, buffer.timestamp);
+    ipc_measure_put_data(&buffer);
+    if(pdFALSE == ipc_subscribe_execute(
+          data + ch_generic2internal(buffer.ch)))
+    {
+      ipc_watchdog_signal_error(0);
+    }
   }
 }
 
 /* public (unofficial) functions */
 void TIM2_IRQHandler(void)
 {
+  int i;
   portBASE_TYPE xTaskWokenByPost = pdFALSE;
-  static data_t buffer[] =
+  static measure_data_t buffer[] =
   {
-    { { 0 }, input_channel0, 0 }
+    { { 0 }, input_channel0, 0 },
+    { { 0 }, input_channel1, 0 }
   };
-  static unsigned i = 0;
+  static unsigned timestamp = 0;
 
   TIM_ClearITPendingBit( TIM2, TIM_IT_Update );
-        
-  buffer[0].data[i] = read_channel(buffer[0].ch);
-  i++;
-
-  if(i == API_MEASURE_DATA_CHUNK_SIZE)
+  
+  for(i=0; i<sizeof(buffer)/sizeof(buffer[0]); i++)
   {
-    i = 0;
-    xQueueSendToFrontFromISR(
-        irq_transfer,
-        &buffer+0,
-        &xTaskWokenByPost);
-    buffer[0].timestamp += API_MEASURE_DATA_CHUNK_SIZE;
+    buffer[i].data[timestamp] = read_channel(buffer[i].ch);
+  }
+  timestamp++;
+
+  if(timestamp == API_MEASURE_DATA_CHUNK_SIZE)
+  {
+    timestamp = 0;
+    for(i=0; i<sizeof(buffer)/sizeof(buffer[0]); i++)
+    {
+      xQueueSendToFrontFromISR(
+          irq_transfer,
+          &buffer+i,
+          &xTaskWokenByPost);
+      buffer[i].timestamp += API_MEASURE_DATA_CHUNK_SIZE;
+    }
 
     if(xTaskWokenByPost)
       taskYIELD();
@@ -197,19 +200,20 @@ static void timer_cfg(uint16_t prescaler, uint16_t period)
   TIM_Cmd(TIM2, ENABLE);
 }
 
-portBASE_TYPE send_data(
-    oscilloscope_input_t ch,
-    uint16_t value[CONFIG_SAMPLE_BUFFER_SIZE],
-    int timestamp)
+static int ch_generic2internal(oscilloscope_input_t ch)
 {
-  ipc_measure_put_data(value, timestamp);
-  if(pdFALSE == ipc_subscribe_execute(data + ch))
+  switch(ch)
   {
-    ipc_watchdog_signal_error(0);
-    return pdFALSE;
-  }
+    case input_channel0:
+      return 0;
 
-  return pdTRUE;
+    case input_channel1:
+      return 1;
+
+    default:
+      ipc_watchdog_signal_error(0);
+      return 0;
+  }
 }
 
 /*

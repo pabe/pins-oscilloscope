@@ -83,6 +83,7 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 }
 
 	static	uint16_t data2[CONFIG_SAMPLE_BUFFER_SIZE];
+static measure_data_t data3;
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
 {
 	int channel;
@@ -111,12 +112,12 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
 	// Fall through to here if all is well
 	{
 		int i;
-		int timestamp;
-		ipc_measure_get_data(data2, &timestamp);
+//		int timestamp;
+		ipc_measure_get_data(&data3);
 
 		for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
 		{
-      display_new_measure(channel, data2[i], timestamp+i);
+      display_new_measure(data3.ch, data3.data[i], data3.timestamp+i);
 		}
 	}
 

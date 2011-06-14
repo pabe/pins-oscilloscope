@@ -4,8 +4,13 @@
 
 #include "assert.h"
 #include "api_measure.h"
+#include "api_watchdog.h"
+
+#include "FreeRTOS.h"
+#include "queue.h"
 
 xQueueHandle ipc_measure;
+static xQueueHandle irq_transfer;
 
 portBASE_TYPE ipc_measure_subscribe(
     ipc_addr_t subscriber,
@@ -24,48 +29,31 @@ portBASE_TYPE ipc_measure_subscribe(
   return ret;
 }
 
-#include <string.h>
-
-#include "FreeRTOS.h"
-#include "semphr.h"
-
-struct
-{
-  uint16_t data[CONFIG_SAMPLE_BUFFER_SIZE];
-  int timestamp;
-  xSemaphoreHandle lock;
-} buffer[CONFIG_SAMPLE_BUFFERS];
-
-/* Known issue: buff_i not protected */
-/* This is not a problem for now as only taskMeasure calls put */
-static int buff_i = 0;
-
 void ipc_measure_init(void)
 {
-  int i;
-  for(i = 0; i<CONFIG_SAMPLE_BUFFERS; i++)
+  irq_transfer = xQueueCreate(
+      CONFIG_API_MEASURE_TRANSFER_SIZE,
+      sizeof(measure_data_t));
+}
+
+void ipc_measure_get_data(measure_data_t *data)
+{
+  if(pdFALSE == xQueueReceive(
+        irq_transfer,
+        data,
+        CONFIG_IPC_WAIT))
   {
-    buffer[i].lock = xSemaphoreCreateMutex();
+    ipc_watchdog_signal_error(0);
   }
 }
 
-void ipc_measure_get_data(uint16_t *dest, int *timestamp)
+void ipc_measure_put_data(const measure_data_t *data)
 {
-  int i = buff_i;
-  xSemaphoreTake(buffer[i].lock, portMAX_DELAY);
-  memcpy(dest, buffer[i].data, sizeof(uint16_t)*CONFIG_SAMPLE_BUFFER_SIZE);
-  *timestamp = buffer[i].timestamp;
-  xSemaphoreGive(buffer[i].lock);
-}
-
-void ipc_measure_put_data(uint16_t *src, int timestamp)
-{
-  int i = (buff_i+1)%2;
-  
-  xSemaphoreTake(buffer[i].lock, portMAX_DELAY);
-  memcpy(buffer[i].data, src, sizeof(uint16_t)*CONFIG_SAMPLE_BUFFER_SIZE);
-  buffer[i].timestamp = timestamp;
-  xSemaphoreGive(buffer[i].lock);
-  
-  buff_i = i;
+  if(pdFALSE == xQueueSendToBack(
+        irq_transfer,
+        data,
+        CONFIG_IPC_WAIT))
+  {
+    ipc_watchdog_signal_error(0);
+  }
 }

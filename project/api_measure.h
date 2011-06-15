@@ -29,4 +29,8 @@ portBASE_TYPE ipc_measure_subscribe(
 void ipc_measure_init(void);
 void ipc_measure_get_data(measure_data_t *data);
 void ipc_measure_put_data(const measure_data_t *data);
+
+portBASE_TYPE ipc_measure_cfg_timer(
+    uint16_t prescaler,
+    uint16_t period);
 #endif /* __API_MEASURE__H_ */

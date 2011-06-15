@@ -19,6 +19,7 @@
   
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *cmd);
+static portBASE_TYPE handle_msg_cfg_timer(msg_id_t id, msg_data_t *cmd);
 static void timer_cfg(uint16_t prescaler, uint16_t period);
 static int ch_generic2internal(oscilloscope_input_t ch);
 
@@ -29,7 +30,8 @@ static ipc_subscribe_msg_t rate;
 static uint16_t read_channel(oscilloscope_input_t ch);
 static const ipc_loop_t msg_handle_table[] =
 {
-  { msg_id_measure_subscribe, handle_msg_subscribe }
+  { msg_id_measure_subscribe, handle_msg_subscribe },
+  { msg_id_measure_cfg_timer, handle_msg_cfg_timer }
 };
 
 static const ipc_subscribe_table_t ipc_subscribe_table[] =
@@ -76,8 +78,6 @@ portBASE_TYPE task_measure_init(void)
   ADC_StartCalibration(ADC1);
   /* Check the end of ADC calibration */
   while(ADC_GetCalibrationStatus(ADC1));
-//  TimerInit(5,5000);
-  timer_cfg(60,5000);
 
   return pdTRUE;
 }
@@ -117,7 +117,7 @@ void task_measure(void* params)
   {
     xQueueReceive(irq_transfer, &buffer, portMAX_DELAY);
     ipc_measure_put_data(&buffer);
-    if(pdFALSE == ipc_subscribe_execute(
+    if(NULL != ipc_subscribe_execute(
           data + ch_generic2internal(buffer.ch)))
     {
       ipc_watchdog_signal_error(0);
@@ -133,6 +133,7 @@ void TIM2_IRQHandler(void)
   static measure_data_t buffer[] =
   {
     { { 0 }, input_channel0, 0 }
+    /* code in display does not support multi channel */
 	#if 0
     ,{ { 0 }, input_channel1, 0 }
 	#endif
@@ -171,6 +172,15 @@ static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg)
       msg,
       ipc_subscribe_table,
       sizeof(ipc_subscribe_table)/sizeof(ipc_subscribe_table[0]));
+}
+
+static portBASE_TYPE handle_msg_cfg_timer(msg_id_t id, msg_data_t *msg)
+{
+  timer_cfg(
+      msg->measure_cfg_timer.prescaler,
+      msg->measure_cfg_timer.period);
+  
+  return pdTRUE;
 }
 
 static void timer_cfg(uint16_t prescaler, uint16_t period)

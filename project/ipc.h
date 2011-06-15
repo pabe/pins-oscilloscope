@@ -56,7 +56,7 @@ portBASE_TYPE ipc_handle_msg_subscribe(
     const ipc_subscribe_table_t table[],
     size_t size);
 void ipc_subscribe_init(ipc_subscribe_msg_t *sub, msg_id_t head_id);
-portBASE_TYPE ipc_subscribe_execute(ipc_subscribe_msg_t *v);
+xQueueHandle ipc_subscribe_execute(ipc_subscribe_msg_t *v);
 portBASE_TYPE ipc_subscribe_add(
     ipc_subscribe_msg_t *v,
     ipc_addr_t subscriber);

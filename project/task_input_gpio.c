@@ -41,7 +41,7 @@ void task_input_gpio(void *p)
     {
       /* TODO: we should fix a debouncer */
       static int i = 0;
-		
+		  static int b = 10;
       vTaskDelay(50/portTICK_RATE_MS);
       if(new_pin_state == GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9))
       {

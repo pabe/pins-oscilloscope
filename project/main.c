@@ -232,15 +232,15 @@ int main( void )
   }
  
   //xTaskCreate(lcdTask, "lcd", 100, NULL, 1, NULL); 
-  //xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
+//  xTaskCreate(printTask, "print", 100, NULL, 1, NULL); 
   //xTaskCreate(touchScreenTask, "touchScreen", 100, NULL, 1, NULL); 
   //xTaskCreate(highlightButtonsTask, "highlighter", 100, NULL, 1, NULL); 
  
   xTaskCreate(task_controller, "Controller", 100, NULL, 1, NULL); 
   xTaskCreate(task_watchdog, "Watchdog driver", 100, NULL, 1, NULL); 
   xTaskCreate(task_input_gpio, "Input driver for GPIO", 100, NULL, 1, NULL); 
-  xTaskCreate(task_input_touch, "Input driver for touchscreen", 100, NULL, 1, NULL); 
-  xTaskCreate(task_display, "Display", 100, NULL, 1, NULL); 
+  xTaskCreate(task_input_touch, "Input driver for touchscreen", 200, NULL, 1, NULL); 
+  xTaskCreate(task_display, "Display", 300, NULL, 1, NULL); 
   xTaskCreate(task_measure_cmd, "ADC-driver: controller", 100, NULL, 1, NULL); 
   xTaskCreate(task_measure, "ADC-driver: IRQ interface", 100, NULL, 1, NULL); 
 //  printf("Setup complete ");  // this is redirected to the display 

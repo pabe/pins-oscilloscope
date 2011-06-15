@@ -10,6 +10,7 @@
 #include "FreeRTOS.h"
 #include "GLCD.h"
 #include "stm3210c_eval_ioe.h"
+#include "stm32f10x_tim.h"
 #include "task.h"
 #include "semphr.h"
 
@@ -115,11 +116,13 @@ static void btnPressVmMode(u16 btn) {
 
             break;
         case 4:
-
+            ipc_display_toggle_channel(input_channel0);
             break;
+
         case 5:
-
+            ipc_display_toggle_channel(input_channel1);
             break;
+
         default:
             printf("unhandled button");
             ipc_watchdog_signal_error(0);
@@ -166,6 +169,7 @@ void task_input_touch(void *p) {
     /* subscribe to mode variable in the controller, returns pd(TRUE|FALSE) */
     ipc_controller_subscribe(ipc_input_touch, ipc_controller_variable_mode);
     registerButtonsCallback();
+            ts_state = IOE_TS_GetState();
 
     while (1) {
         portTickType sleep_time;
@@ -173,16 +177,14 @@ void task_input_touch(void *p) {
 
         sleep_time = xTaskGetTickCount();
 
-		//printf("r");
         assert(ipc_input_touch);
         if (pdFALSE == xQueueReceive(ipc_input_touch, &msg, timeout)) {
-            /* timeout work */
-#if 1
-            //xSemaphoreTake(lcdLock, portMAX_DELAY);
+  taskDISABLE_INTERRUPTS();
+  TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
             ts_state = IOE_TS_GetState();
-			//printf("s%d", ts_state->TouchDetected);
+  TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+  taskENABLE_INTERRUPTS();
             if (pressed) {
-			//printf("inside pressed");
                 if (!ts_state->TouchDetected)
                     pressed = 0;
             } else if (ts_state->TouchDetected) {
@@ -196,8 +198,6 @@ void task_input_touch(void *p) {
                 }
                 pressed = 1;
             }
-            //xSemaphoreGive(lcdLock);
-#endif
         } else {
             switch (msg.head.id) {
                 case msg_id_subscribe_mode:

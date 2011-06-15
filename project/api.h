@@ -35,6 +35,7 @@ typedef struct
       msg_id_display_cmd,
       msg_id_watchdog_cmd,
       msg_id_measure_subscribe,
+      msg_id_measure_cfg_timer,
       msg_id_subscribe_mode,
       msg_id_subscribe_controller_divs,
       msg_id_subscribe_measure_data,
@@ -75,6 +76,12 @@ typedef struct
       watchdog_cmd_aux_led_lit,
       watchdog_cmd_aux_led_quench
     } watchdog_cmd;
+
+    struct msg_measure_cfg_timer
+    {
+      uint16_t prescaler;
+      uint16_t period;
+    } measure_cfg_timer;
 
     struct msg_measure_subscribe
     {

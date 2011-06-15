@@ -102,7 +102,7 @@ void ipc_subscribe_init(ipc_subscribe_msg_t *sub, msg_id_t head_id)
   }
 }
 
-portBASE_TYPE ipc_subscribe_execute(ipc_subscribe_msg_t *v)
+xQueueHandle ipc_subscribe_execute(ipc_subscribe_msg_t *v)
 {
   int i;
   assert(v);
@@ -113,11 +113,11 @@ portBASE_TYPE ipc_subscribe_execute(ipc_subscribe_msg_t *v)
       break;
 
     if(pdFALSE == xQueueSendToBack(v->queues[i], &v->msg, CONFIG_IPC_WAIT))
-      return pdFALSE;
+      return v->queues[i];
 
   }
 
-  return pdTRUE;
+  return NULL;
 }
 
 portBASE_TYPE ipc_subscribe_add(

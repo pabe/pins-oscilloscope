@@ -22,12 +22,14 @@
 
 /* private functions */
 static void update_mode(oscilloscope_mode_t new_mode);
+static void update_zoom(void);
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *cmd);
 static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *cmd);
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg);
 
 /* public variables */
 /* private variables */
+static uint8_t zoom = 9;
 static ipc_subscribe_msg_t mode;
 static const ipc_loop_t msg_handle_table[] =
 {
@@ -45,8 +47,9 @@ static const ipc_subscribe_table_t ipc_subscribe_table[] =
 void task_controller(void *p)
 {
   ipc_subscribe_init(&mode, msg_id_subscribe_mode);
-  update_mode(oscilloscope_mode_oscilloscope);
-//  update_mode(oscilloscope_mode_multimeter);
+//  update_mode(oscilloscope_mode_oscilloscope);
+  update_mode(oscilloscope_mode_multimeter);
+  update_zoom();
 
   ipc_measure_subscribe(ipc_controller, ipc_measure_variable_rate);
 
@@ -84,11 +87,76 @@ static void update_mode(oscilloscope_mode_t new_mode)
         break;
     }
     mode.msg.data.subscribe_mode = new_mode;
-    if(pdFALSE == ipc_subscribe_execute(&mode))
+    if(NULL != ipc_subscribe_execute(&mode))
     {
       ipc_watchdog_signal_error(0);
     }
   }
+}
+
+static void update_zoom(void)
+{
+  int prescaler;
+  int period;
+
+  switch(zoom)
+  {
+    case 0:
+      prescaler = 0;
+      period    = 5000;
+      break;
+
+    case 1:
+      prescaler = 2;
+      period    = 2500;
+      break;
+
+    case 2:
+      prescaler = 4;
+      period    = 2500;
+      break;
+
+    case 3:
+      prescaler = 6;
+      period    = 2500;
+      break;
+
+    case 4:
+      prescaler = 8;
+      period    = 2500;
+      break;
+
+    case 5:
+      prescaler = 10;
+      period    = 2500;
+      break;
+
+    case 6:
+      prescaler = 12;
+      period    = 2500;
+      break;
+
+    case 7:
+      prescaler = 14;
+      period    = 2500;
+      break;
+
+    case 8:
+      prescaler = 16;
+      period    = 2500;
+      break;
+
+    case 9:
+      prescaler = 18;
+      period    = 2500;
+      break;
+
+    default:
+      ipc_watchdog_signal_error(0);
+      return;
+  }
+  
+  ipc_measure_cfg_timer(prescaler, period);
 }
 
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
@@ -115,11 +183,20 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
       break;
 
     case controller_cmd_time_axis_increase:
-//      printf("|C: AXIS_INC| ");
+      if(zoom < 9)
+      {
+        zoom++;
+        update_zoom();
+      }
       break;
       
     case controller_cmd_time_axis_decrease:
-//      printf("|C: AXIS_DEC| ");
+      if(zoom > 0)
+      {
+        zoom--;
+        update_zoom();
+      }
+
       break;
       
     default:

@@ -82,46 +82,16 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 	return pdTRUE;
 }
 
-	static	uint16_t data2[CONFIG_SAMPLE_BUFFER_SIZE];
-static measure_data_t data3;
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
-{  if(1){
-	int channel;
-	switch(data->subscribe_measure_data.ch)
-	{
-#if 0
-		case input_channel0:
-			display_new_measure(0, data->subscribe_measure_data.data, data->subscribe_measure_data.timestamp);
-			break;
+{ 
+  static measure_data_t data3;
+  int i;
+  ipc_measure_get_data(&data3);
 
-		case input_channel1:
-			display_new_measure(1, data->subscribe_measure_data.data, data->subscribe_measure_data.timestamp);
-			break;
-#endif
-		case input_channel0:
-			channel = 0;
-			break;
-		case input_channel1:
-      return pdTRUE;
-			channel = 1;
-			break;
-		default:
-			return pdFALSE;
-	}
-
-	// Fall through to here if all is well
-	{
-		int i;
-//		int timestamp;
-		ipc_measure_get_data(&data3);
-
-		for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
-		{
-      display_new_measure(data3.ch, data3.data[i], data3.timestamp+i);
-		}
-	}
-		 }
-	//	 ipc_measure_get_data(&data3);//FIXME FIXME
+  for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
+  {
+    display_new_measure(data3.ch, data3.data[i], data3.timestamp+i);
+  }
   return pdTRUE;
 }
 
@@ -130,8 +100,7 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
   switch(data->display_cmd)
   {
     case display_cmd_toggle_freeze_screen:
-		printf("Freezy");
-      //ipc_watchdog_signal_error(0);
+      display_buffer_enable[0] = display_buffer_enable[1] = 0;
       break;
 
     default:
@@ -141,30 +110,30 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
 }
 static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data)
 {
-	switch(data->msg_display_toggle_channel)
-	{
-		case input_channel0:
-			display_buffer_enable[0] ^= 1;
-			break;
-		case input_channel1:
-			display_buffer_enable[1] ^= 1;
-			break;
-		default:
-			return pdFALSE;
-	}
+  switch(data->msg_display_toggle_channel)
+  {
+    case input_channel0:
+      display_buffer_enable[0] ^= 1;
+      break;
+    case input_channel1:
+      display_buffer_enable[1] ^= 1;
+      break;
+    default:
+      return pdFALSE;
+  }
 
-	return pdTRUE;
+  return pdTRUE;
 }
 
 // Call when layout has changed
 void display_redraw(void) {
-	char channel;
-	uint16_t sample; //C89  ;__;
-	xSemaphoreTake(lcdLock, portMAX_DELAY);
-	GLCD_clear(White); 	  //Is this the right place to do this?
-	xSemaphoreGive(lcdLock);
-	switch(display_mode) {
-		case oscilloscope_mode_oscilloscope:
+  char channel;
+  uint16_t sample; //C89  ;__;
+  xSemaphoreTake(lcdLock, portMAX_DELAY);
+    GLCD_clear(White); 	  //Is this the right place to do this?
+  xSemaphoreGive(lcdLock);
+  switch(display_mode) {
+    case oscilloscope_mode_oscilloscope:
 			// Draw interface
 			display_buttons();
 
@@ -212,43 +181,46 @@ void display_new_measure(char channel, uint16_t sample, int timestamp) {
 
 // New sample to display, regardless of mode
 void display_sample(char channel, uint16_t sample) {
-	switch(display_mode) {
-		// Draw new pixel
-		case oscilloscope_mode_oscilloscope:
-			// Remove old pixel
-			xSemaphoreTake(lcdLock, portMAX_DELAY);
+  if(display_buffer_enable[channel])
+  {
+    switch(display_mode) {
+      // Draw new pixel
+      case oscilloscope_mode_oscilloscope:
+        // Remove old pixel
+        xSemaphoreTake(lcdLock, portMAX_DELAY);
 
-			//GLCD_setTextColor(Black);
-			GLCD_setTextColor(White);
-			display_show_analog(display_index(channel), display_buffer[display_index(channel)][channel]);
+        //GLCD_setTextColor(Black);
+        GLCD_setTextColor(White);
+        display_show_analog(display_index(channel), display_buffer[display_index(channel)][channel]);
 
-			// Display new pixel
-			GLCD_setTextColor(channel ? Green : Magenta);
-			display_show_analog(display_index(channel), sample);
+        // Display new pixel
+        GLCD_setTextColor(channel ? Green : Magenta);
+        display_show_analog(display_index(channel), sample);
 
-			xSemaphoreGive(lcdLock);
+        xSemaphoreGive(lcdLock);
 
-			// Update buffer
-			display_buffer[display_index(channel)][channel] = sample;
-			display_buffer_index[channel]++;
+        // Update buffer
+        display_buffer[display_index(channel)][channel] = sample;
+        display_buffer_index[channel]++;
 
-			break;
+        break;
 
-			// Update number
-		case oscilloscope_mode_multimeter:
-			display_WriteMultimerDigit(channel, sample);
-			break;
+        // Update number
+      case oscilloscope_mode_multimeter:
+        display_WriteMultimerDigit(channel, sample);
+        break;
 
-			// Whoops?
-		default:
-			break;
-	}
+        // Whoops?
+      default:
+        break;
+    }
+  }
 }
 
 void display_show_analog(uint16_t x, uint16_t y) {
-	// REMEMBER TO GRAB LOCK BEFORE CALLING!
-	
-	// Stupid display has all messed up coordinate system :/
+  // REMEMBER TO GRAB LOCK BEFORE CALLING!
+
+  // Stupid display has all messed up coordinate system :/
 	// We pretend this is not the case...
 	//          <- y
 	// +-----------+ x
@@ -327,12 +299,12 @@ int Line = 0;
    		case  input_channel0:
 			Line = Line3;
 			//sprintf (buffer, "Chan A: %.1f", voltageConversion(sample));
-			sprintf (buffer, "Chan A: %d", sample);
+			sprintf (buffer, "Chan A: % 4.4f", voltageConversion(sample));
 			break;
    		case  input_channel1:
    			Line = Line4;
 			//sprintf (buffer, "Chan B: %.1f", voltageConversion(sample));
-			sprintf (buffer, "Chan B: %d", sample);
+			sprintf (buffer, "Chan B: % 4.4d", sample);
 
 			break;
 		default:

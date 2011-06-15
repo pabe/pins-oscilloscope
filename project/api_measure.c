@@ -57,3 +57,20 @@ void ipc_measure_put_data(const measure_data_t *data)
     //ipc_watchdog_signal_error(0);
   }
 }
+portBASE_TYPE ipc_measure_cfg_timer(
+    uint16_t prescaler,
+    uint16_t period)
+{
+  msg_t msg;
+  portBASE_TYPE ret;
+
+  msg.head.id = msg_id_measure_cfg_timer;
+  msg.data.measure_cfg_timer.prescaler = prescaler;
+  msg.data.measure_cfg_timer.period    = period;
+
+  assert(ipc_measure);
+  ret = xQueueSendToBack(ipc_measure, &msg, CONFIG_IPC_WAIT);
+  assert(ret == pdTRUE);
+  return ret;
+  
+}

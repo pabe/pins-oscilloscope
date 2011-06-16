@@ -1,11 +1,9 @@
 /*
- * oscilloscope.h:
- *
  * Structures for the project.
  */
 
-#ifndef __OSCILLOSCOPE__H_
-#define __OSCILLOSCOPE__H_
+#ifndef __OSCILLOSCOPE__H__
+#define __OSCILLOSCOPE__H__
 
 typedef enum
 {
@@ -19,4 +17,4 @@ typedef enum
   input_channel1
 } oscilloscope_input_t;
 
-#endif /* __OSCILLOSCOPE__H_ */
+#endif /* __OSCILLOSCOPE__H__ */

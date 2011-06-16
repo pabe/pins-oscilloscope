@@ -1,6 +1,7 @@
-#ifndef __CONFIG_H_
-#define __CONFIG_H_
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
+/* TODO: Clean! */
 #define IPC_QUEUE_LEN_WATCHDOG        5
 #define IPC_QUEUE_LEN_CONTROLLER      5
 #define IPC_QUEUE_LEN_INPUT_TOUCH     5
@@ -15,10 +16,10 @@
 #define CONFIG_SAMPLE_BUFFERS     2
 
 #define CONFIG_IPC_WAIT (500 / portTICK_RATE_MS)
-//#define CONFIG_ENABLE_PRINTER
+//#define CONFIG_ENABLE_PRINTER 1
 
 #define CFG_TASK_WATCHDOG__POLLING_PERIOD       (300 / portTICK_RATE_MS)
 #define CFG_TASK_INPUT_GPIO__POLLING_PERIOD     (10 / portTICK_RATE_MS)
 #define CFG_TASK_INPUT_TOUCH__POLLING_PERIOD    (100 / portTICK_RATE_MS)
 
-#endif /* __CONFIG_H_ */
+#endif /* __CONFIG_H__ */

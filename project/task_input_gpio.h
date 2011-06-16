@@ -1,13 +1,10 @@
-/**
- * task_input_gpio:
- *
- * Driver responsible for input from buttons.
- * (For now only 'Key'.)
+/*
+ * Direct shmem-interface for the GPIO-input.
  */
 
-#ifndef __TASK_INPUT_GPIO_H_
-#define __TASK_INPUT_GPIO_H_
+#ifndef __TASK_INPUT_GPIO_H__
+#define __TASK_INPUT_GPIO_H__
 
 void task_input_gpio(void *p);
 
-#endif /* __TASK_INPUT_GPIO_H_ */
+#endif /* __TASK_INPUT_GPIO_H__ */

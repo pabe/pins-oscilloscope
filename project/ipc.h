@@ -1,22 +1,13 @@
 /*
- * Some generica IPC helper functions.
+ * Some generica IPC/API-helper functions.
  */
 
-#ifndef __IPC__H_
-#define __IPC__H_
+#ifndef __IPC__H__
+#define __IPC__H__
 
 #include <stdint.h>
 #include "config.h"
 #include "api.h"
-
-/* internal IPC macros start */
-/* DO NOT use outside ipc.{h|c} */
-#define IPC_OFFSET(MEMBER) \
-  (&(((msg_data_t*)0)->MEMBER))
-
-#define IPC_SET_OFFSET(TYPE, SUB, VAR) \
-  IPC_OFFSET(TYPE ## . ## SUB), IPC_OFFSET(TYPE ## . ## VAR)
-/* internal IPC macros end */
 
 typedef struct
 {
@@ -37,10 +28,20 @@ typedef struct
   void *subscriber;
   void *variable;
 } ipc_subscribe_table_t;
+
+/* private macros, these should not be used outside ipc-helpers */
+#define IPC_OFFSET(MEMBER) \
+  (&(((msg_data_t*)0)->MEMBER))
+
+#define IPC_SET_OFFSET(TYPE, SUB, VAR) \
+  IPC_OFFSET(TYPE ## . ## SUB), IPC_OFFSET(TYPE ## . ## VAR)
+
+/* public macro */
 #define IPC_SUBSCRIBE_TABLE_INIT(MSG_PTR, VALUE, TYPE) \
   { MSG_PTR, VALUE, IPC_SET_OFFSET(TYPE, subscriber,variable) }
 
 portBASE_TYPE ipc_init(void);
+
 /*
  * return:
  * true = timeout
@@ -51,14 +52,18 @@ portBASE_TYPE ipc_get(
     portTickType xTicksToWait,
     const ipc_loop_t handlers[],
     size_t n);
+
 portBASE_TYPE ipc_handle_msg_subscribe(
     msg_data_t *msg,
     const ipc_subscribe_table_t table[],
     size_t size);
+
 void ipc_subscribe_init(ipc_subscribe_msg_t *sub, msg_id_t head_id);
+
 xQueueHandle ipc_subscribe_execute(ipc_subscribe_msg_t *v);
+
 portBASE_TYPE ipc_subscribe_add(
     ipc_subscribe_msg_t *v,
     ipc_addr_t subscriber);
 
-#endif /* __IPC__H_ */
+#endif /* __IPC__H__ */

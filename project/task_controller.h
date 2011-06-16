@@ -1,12 +1,10 @@
-/**
- * task_controller:
- *
- * TASK (TODO: WRITE ME!)
+/*
+ * Direct shmem-interface for the controller.
  */
 
-#ifndef __TASK_CONTROLLER__H_
-#define __TASK_CONTROLLER__H_
+#ifndef __TASK_CONTROLLER__H__
+#define __TASK_CONTROLLER__H__
 
 void task_controller(void *p);
 
-#endif /* __TASK_CONTROLLER__H_ */
+#endif /* __TASK_CONTROLLER__H__ */

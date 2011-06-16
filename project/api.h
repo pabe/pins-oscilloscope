@@ -1,9 +1,6 @@
 /*
- * api:
- *
- * Base API.
+ * API-interface base (all messages)
  */
-
 #ifndef __API__H_
 #define __API__H_
 
@@ -61,9 +58,9 @@ typedef struct
       } variable;
       ipc_addr_t subscriber;
     } controller_subscribe;
-    
+
     oscilloscope_input_t msg_display_toggle_channel;
-    
+
     int msg_display_button_highlight;
 
     enum msg_display_cmd
@@ -95,7 +92,7 @@ typedef struct
     } measure_subscribe;
 
     oscilloscope_mode_t subscribe_mode;
-    
+
     struct msg_subscribe_measure_data
     {
       oscilloscope_input_t ch;
@@ -113,4 +110,4 @@ typedef struct
 typedef enum  msg_id   msg_id_t;
 typedef union msg_data msg_data_t;
 
-#endif /* __API__H_ */
+#endif /* __API__H__ */

@@ -1,13 +1,10 @@
-/**
- * task_watchdog:
- *
- * TASK responsible for status leds and HW-watchdog reset circuts.
- * (For now a pure SW that toogles a LED.)
+/*
+ * Direct shmem-interface for the watchdog.
  */
 
-#ifndef __TASK_WATCHDOG__H_
-#define __TASK_WATCHDOG__H_
+#ifndef __TASK_WATCHDOG__H__
+#define __TASK_WATCHDOG__H__
 
 void task_watchdog(void *p);
 
-#endif /* __TASK_WATCHDOG__H_ */
+#endif /* __TASK_WATCHDOG__H__ */

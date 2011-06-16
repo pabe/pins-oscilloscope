@@ -1,18 +1,13 @@
 /*
- * api_watchdog:
- *
- * API to interface the controller over IPC.
+ * Thread-safe API-interface for the controller.
  */
 
-
-#ifndef __API_CONTROLLER__H_
-#define __API_CONTROLLER__H_
+#ifndef __API_CONTROLLER__H__
+#define __API_CONTROLLER__H__
 #include "FreeRTOS.h"
 #include "queue.h"
-#include "assert.h"
 
 #include "api.h"
-#include "config.h"
 #include "oscilloscope.h"
 
 typedef enum   msg_controller_cmd 
@@ -24,7 +19,6 @@ typedef enum   msg_controller_subscribe_variable
 
 extern xQueueHandle ipc_controller;
 
-
 portBASE_TYPE ipc_controller_mode_set(oscilloscope_mode_t mode);
 portBASE_TYPE ipc_controller_mode_toggle(void);
 portBASE_TYPE ipc_controller_time_axis_increase(void);
@@ -34,4 +28,4 @@ portBASE_TYPE ipc_controller_subscribe(
     ipc_addr_t subscriber,
     msg_controller_subscribe_variable_t var);
 
-#endif /* __API_CONTROLLER__H_ */
+#endif /* __API_CONTROLLER__H__ */

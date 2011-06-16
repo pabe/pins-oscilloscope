@@ -1,17 +1,13 @@
 /*
- * API to interface with input driver for touchscreen.
+ * Thread-safe API-interface for the touchscreen.
  */
 
-#ifndef __API_INPUT_TOUCH__H_
-#define __API_INPUT_TOUCH__H_
+#ifndef __API_INPUT_TOUCH__H__
+#define __API_INPUT_TOUCH__H__
 
 #include "FreeRTOS.h"
 #include "queue.h"
 
-#include "assert.h"
-#include "api.h"
-
 extern xQueueHandle ipc_input_touch;
 
-
-#endif /* __API_INPUT_TOUCH__H_ */
+#endif /* __API_INPUT_TOUCH__H__ */

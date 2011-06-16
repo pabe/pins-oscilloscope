@@ -1,9 +1,9 @@
 /*
- * API to interface the ADCs over IPC.
+ * Thread-safe API-interface for the ADCs.
  */
 
-#ifndef __API_MEASURE__H_
-#define __API_MEASURE__H_
+#ifndef __API_MEASURE__H__
+#define __API_MEASURE__H__
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -33,4 +33,5 @@ void ipc_measure_put_data(const measure_data_t *data);
 portBASE_TYPE ipc_measure_cfg_timer(
     uint16_t prescaler,
     uint16_t period);
-#endif /* __API_MEASURE__H_ */
+
+#endif /* __API_MEASURE__H__ */

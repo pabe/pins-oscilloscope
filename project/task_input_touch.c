@@ -179,11 +179,11 @@ void task_input_touch(void *p) {
 
         assert(ipc_input_touch);
         if (pdFALSE == xQueueReceive(ipc_input_touch, &msg, timeout)) {
-  taskDISABLE_INTERRUPTS();
-  TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
-            ts_state = IOE_TS_GetState();
-  TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-  taskENABLE_INTERRUPTS();
+          taskDISABLE_INTERRUPTS();
+          TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
+          ts_state = IOE_TS_GetState();
+          TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+          taskENABLE_INTERRUPTS();
             if (pressed) {
                 if (!ts_state->TouchDetected)
                     pressed = 0;

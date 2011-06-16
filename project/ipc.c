@@ -1,5 +1,5 @@
 /*
- * Some generica IPC helper functions.
+ * Some generica IPC/API-helper functions.
  */
 
 #include "FreeRTOS.h"
@@ -153,6 +153,5 @@ static portBASE_TYPE ipc_init_module(
     return pdFALSE;
 
   *h = xQueueCreate(uxQueueLength, sizeof(msg_t));
-  assert(*h);
   return *h ? pdTRUE : pdFALSE;
 }

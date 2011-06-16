@@ -17,17 +17,16 @@
 /*-----------------------------------------------------------*/ 
 
 #include "config.h"
-#include "task_input_gpio.h" 
-#include "task_input_touch.h" 
-#include "task_controller.h" 
-#include "task_watchdog.h" 
 #include "api_controller.h" 
 #include "api_measure.h"
 #include "api_watchdog.h" 
 #include "ipc.h" 
 #include "task_measure.h" 
 #include "task_display.h" 
-#define WIDTH 320 
+#include "task_input_gpio.h" 
+#include "task_input_touch.h" 
+#include "task_controller.h" 
+#include "task_watchdog.h" 
 
 xSemaphoreHandle lcdLock; 
 
@@ -40,10 +39,6 @@ static void initDisplay () {
   GLCD_clear(White); 
 } 
 /*-----------------------------------------------------------*/ 
-
-/** 
- * Display stdout on the display 
- */ 
 
 #ifdef CONFIG_ENABLE_PRINTER
 xQueueHandle printQueue; 

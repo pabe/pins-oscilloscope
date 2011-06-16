@@ -1,5 +1,5 @@
 /*
- * API to interface with input driver for touchscreen.
+ * Thread-safe API-interface for the touchscreen.
  */
 
 #include "api_input_touch.h"

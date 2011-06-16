@@ -1,7 +1,5 @@
 /*
- * api_watchdog:
- *
- * API to interface the watchdog over IPC.
+ * Thread-safe API-interface for the watchdog.
  */
 
 #include <stdio.h>
@@ -25,9 +23,9 @@ portBASE_TYPE ipc_watchdog_set_led_aux(portBASE_TYPE value)
 
   msg.head.id = msg_id_watchdog_cmd;
   msg.data.watchdog_cmd = value ? watchdog_cmd_aux_led_lit : watchdog_cmd_aux_led_quench;
-  
+
   assert(ipc_watchdog);
   ret = xQueueSendToBack(ipc_watchdog, &msg, CONFIG_IPC_WAIT);
-  assert(ret == pdTRUE);
+  
   return ret;
 }

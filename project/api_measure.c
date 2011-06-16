@@ -1,5 +1,5 @@
 /*
- * API to interface the ADCs over IPC.
+ * Thread-safe API-interface for the ADCs.
  */
 
 #include "assert.h"
@@ -10,7 +10,7 @@
 #include "queue.h"
 
 xQueueHandle ipc_measure;
-static xQueueHandle irq_transfer;
+static xQueueHandle data_queue;
 
 portBASE_TYPE ipc_measure_subscribe(
     ipc_addr_t subscriber,
@@ -31,32 +31,27 @@ portBASE_TYPE ipc_measure_subscribe(
 
 void ipc_measure_init(void)
 {
-  irq_transfer = xQueueCreate(
+  data_queue = xQueueCreate(
       CONFIG_API_MEASURE_TRANSFER_SIZE,
       sizeof(measure_data_t));
 }
 
 void ipc_measure_get_data(measure_data_t *data)
 {
-  if(pdFALSE == xQueueReceive(
-        irq_transfer,
-        data,
-        CONFIG_IPC_WAIT))
-  {
-    //ipc_watchdog_signal_error(0);
-  }
+  xQueueReceive(
+      data_queue,
+      data,
+      CONFIG_IPC_WAIT);
 }
 
 void ipc_measure_put_data(const measure_data_t *data)
 {
-  if(pdFALSE == xQueueSendToBack(
-        irq_transfer,
-        data,
-        CONFIG_IPC_WAIT))
-  {
-    //ipc_watchdog_signal_error(0);
-  }
+  xQueueSendToBack(
+      data_queue,
+      data,
+      CONFIG_IPC_WAIT);
 }
+
 portBASE_TYPE ipc_measure_cfg_timer(
     uint16_t prescaler,
     uint16_t period)
@@ -70,7 +65,6 @@ portBASE_TYPE ipc_measure_cfg_timer(
 
   assert(ipc_measure);
   ret = xQueueSendToBack(ipc_measure, &msg, CONFIG_IPC_WAIT);
-  assert(ret == pdTRUE);
+
   return ret;
-  
 }

@@ -46,174 +46,169 @@ static void registerButtonsCallback(void);
  */
 
 typedef struct {
-    u16 lower, upper, left, right;
-    void *data;
-    void (*callback)(void *data);
+  u16 lower, upper, left, right;
+  void *data;
+  void (*callback)(void *data);
 } TSCallback;
 
 static TSCallback callbacks[16];
 static u8 callbackNum = 0;
 
 void registerTSCallback(u16 left, u16 right, u16 lower, u16 upper,
-        void (*callback)(void *data), void *data) {
-    callbacks[callbackNum].lower = lower;
-    callbacks[callbackNum].upper = upper;
-    callbacks[callbackNum].left = left;
-    callbacks[callbackNum].right = right;
-    callbacks[callbackNum].callback = callback;
-    callbacks[callbackNum].data = data;
-    callbackNum++;
+    void (*callback)(void *data), void *data) {
+  callbacks[callbackNum].lower = lower;
+  callbacks[callbackNum].upper = upper;
+  callbacks[callbackNum].left = left;
+  callbacks[callbackNum].right = right;
+  callbacks[callbackNum].callback = callback;
+  callbacks[callbackNum].data = data;
+  callbackNum++;
 }
 
 static void btnPressOscMode(u16 btn) {
-    //printf("btn:%d Mode:%d", btn, mode);
-    switch (btn) {
-        case 0:
-            ipc_display_toggle_freeze_screen();
-            break;
+  switch (btn) {
+    case 0:
+      ipc_display_toggle_freeze_screen();
+      break;
 
-        case 1:
-			printf("mode");
-            ipc_controller_mode_toggle();
-            break;
+    case 1:
+      ipc_controller_mode_toggle();
+      break;
 
-        case 2:
-            ipc_controller_time_axis_decrease();
-            break;
+    case 2:
+      ipc_controller_time_axis_decrease();
+      break;
 
-        case 3:
-            ipc_controller_time_axis_increase();
-            break;
-        case 4:
-            ipc_display_toggle_channel(input_channel0);
-            break;
+    case 3:
+      ipc_controller_time_axis_increase();
+      break;
+    case 4:
+      ipc_display_toggle_channel(input_channel0);
+      break;
 
-        case 5:
-            ipc_display_toggle_channel(input_channel1);
-            break;
+    case 5:
+      ipc_display_toggle_channel(input_channel1);
+      break;
 
-        default:
-            printf("unhandled button");
-            ipc_watchdog_signal_error(0);
-    }
+    default:
+      printf("unhandled button");
+      ipc_watchdog_signal_error(0);
+  }
 }
 
 static void btnPressVmMode(u16 btn) {
-    //printf("btn:%d Mode:%d", btn, mode);
-    switch (btn) {
-        case 0:
-            ipc_display_toggle_freeze_screen();
-            break;
-        case 1:
-            ipc_controller_mode_toggle();
-            printf("mode");
-			break;
+  switch (btn) {
+    case 0:
+      ipc_display_toggle_freeze_screen();
+      break;
+    case 1:
+      ipc_controller_mode_toggle();
+      break;
 
-        case 2:
+    case 2:
 
-            break;
-        case 3:
+      break;
+    case 3:
 
-            break;
-        case 4:
-            ipc_display_toggle_channel(input_channel0);
-            break;
+      break;
+    case 4:
+      ipc_display_toggle_channel(input_channel0);
+      break;
 
-        case 5:
-            ipc_display_toggle_channel(input_channel1);
-            break;
+    case 5:
+      ipc_display_toggle_channel(input_channel1);
+      break;
 
-        default:
-            printf("unhandled button");
-            ipc_watchdog_signal_error(0);
-    }
+    default:
+      printf("unhandled button");
+      ipc_watchdog_signal_error(0);
+  }
 }
 
 static void registerButtonsCallback(void) {
-    u16 i;
-    Pbutton btn = NULL;
+  u16 i;
+  Pbutton btn = NULL;
 
-    xSemaphoreTake(lcdLock, portMAX_DELAY);
-    for (i = 0; i < 6; ++i) {
-        btn = get_button(i);
-        //GLCD_drawRect(0 + 40 * i, 30, 40, 40);
-        //registerTSCallback(DISPLAY_X_RES - 30 - 40, DISPLAY_X_RES - 30, 0 + 40 * i + 40, 0 + 40 * i, &btnPressHandler, (void*) i);
-        //printf("btn%d   l%d     r%d     low%d     up%d     ", i,btn->left, btn->right, btn->lower, btn->upper);
-		registerTSCallback(DISPLAY_X_RES - btn->left, DISPLAY_X_RES - btn->right, btn->lower, btn->upper, &btnPressHandler, (void*) i);
-    }
-    xSemaphoreGive(lcdLock);
+  xSemaphoreTake(lcdLock, portMAX_DELAY);
+  for (i = 0; i < 6; ++i) {
+    btn = get_button(i);
+    registerTSCallback(DISPLAY_X_RES - btn->left, DISPLAY_X_RES - btn->right, btn->lower, btn->upper, &btnPressHandler, (void*) i);
+  }
+  xSemaphoreGive(lcdLock);
 }
 
 static void btnPressHandler(void *data) {
-    u16 button;
-    button = (int) data;
-    //printf("btn:%d Mode:%d", button, mode);
-    switch (mode) {
-        case oscilloscope_mode_oscilloscope:
-            btnPressOscMode(button);
-            break;
+  u16 button;
+  button = (int) data;
+  //printf("btn:%d Mode:%d", button, mode);
+  switch (mode) {
+    case oscilloscope_mode_oscilloscope:
+      btnPressOscMode(button);
+      break;
 
-        case oscilloscope_mode_multimeter:
-            btnPressVmMode(button);
-            break;
-    }
+    case oscilloscope_mode_multimeter:
+      btnPressVmMode(button);
+      break;
+  }
 }
 
 /* public functions */
 void task_input_touch(void *p) {
-    TS_STATE *ts_state;
-    static u8 pressed = 0;
-    static u8 i;
-    portTickType timeout = CFG_TASK_INPUT_TOUCH__POLLING_PERIOD;
+  TS_STATE *ts_state;
+  static u8 pressed = 0;
+  static u8 i;
+  portTickType timeout = CFG_TASK_INPUT_TOUCH__POLLING_PERIOD;
 
-    /* subscribe to mode variable in the controller, returns pd(TRUE|FALSE) */
-    ipc_controller_subscribe(ipc_input_touch, ipc_controller_variable_mode);
-    registerButtonsCallback();
-            ts_state = IOE_TS_GetState();
+  /* subscribe to mode variable in the controller, returns pd(TRUE|FALSE) */
+  ipc_controller_subscribe(ipc_input_touch, ipc_controller_variable_mode);
+  registerButtonsCallback();
+  ts_state = IOE_TS_GetState();
 
-    while (1) {
-        portTickType sleep_time;
-        msg_t msg;
+  while (1) {
+    portTickType sleep_time;
+    msg_t msg;
 
-        sleep_time = xTaskGetTickCount();
+    sleep_time = xTaskGetTickCount();
 
-        assert(ipc_input_touch);
-        if (pdFALSE == xQueueReceive(ipc_input_touch, &msg, timeout)) {
-          taskDISABLE_INTERRUPTS();
-          TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
-          ts_state = IOE_TS_GetState();
-          TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-          taskENABLE_INTERRUPTS();
-            if (pressed) {
-                if (!ts_state->TouchDetected)
-                    pressed = 0;
-            } else if (ts_state->TouchDetected) {
-                for (i = 0; i < callbackNum; ++i) {
-                    if (callbacks[i].left <= ts_state->X &&
-                            callbacks[i].right >= ts_state->X &&
-                            callbacks[i].lower >= ts_state->Y &&
-                            callbacks[i].upper <= ts_state->Y) {
-                        callbacks[i].callback(callbacks[i].data);
-                    }
-                }
-                pressed = 1;
-            }
-        } else {
-            switch (msg.head.id) {
-                case msg_id_subscribe_mode:
-                    //printf("| MODE: %i |", msg.data.subscribe_mode);
-                    mode = msg.data.subscribe_mode;
-                    printf("mm%d ", mode);
-                    break;
+    assert(ipc_input_touch);
+    if (pdFALSE == xQueueReceive(ipc_input_touch, &msg, timeout)) {
+      /* we disable all known interrupts or the i2c will go bad */
+      taskDISABLE_INTERRUPTS();
+      TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
 
-                default:
-                    ipc_watchdog_signal_error(0);
-            }
+      ts_state = IOE_TS_GetState();
 
-            /* recalculate timeout */
-            timeout = timeout - (xTaskGetTickCount() - sleep_time);
+      TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+      taskENABLE_INTERRUPTS();
+
+      if (pressed) {
+        if (!ts_state->TouchDetected)
+          pressed = 0;
+      } else if (ts_state->TouchDetected) {
+        for (i = 0; i < callbackNum; ++i) {
+          if (callbacks[i].left <= ts_state->X &&
+              callbacks[i].right >= ts_state->X &&
+              callbacks[i].lower >= ts_state->Y &&
+              callbacks[i].upper <= ts_state->Y) {
+            callbacks[i].callback(callbacks[i].data);
+          }
         }
+        pressed = 1;
+      }
+    } else {
+      switch (msg.head.id) {
+        case msg_id_subscribe_mode:
+          mode = msg.data.subscribe_mode;
+          break;
+
+        default:
+          ipc_watchdog_signal_error(0);
+      }
+
+      /* recalculate timeout */
+      timeout = timeout - (xTaskGetTickCount() - sleep_time);
     }
+  }
 }
 
 /* private functions */

@@ -1,10 +1,9 @@
-/**
- * task_watchdog:
- *
+/*
  * TASK responsible for status leds and HW-watchdog reset circuts.
  * (For now a pure SW that toogles a LED.)
  */
 #include <stdio.h>
+
 /* Firmware */
 #include "assert.h"
 

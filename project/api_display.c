@@ -1,5 +1,5 @@
 /*
- * API to interface the watchdog over IPC.
+ *  Thread-safe API-interface for the watchdog.
  */
 
 #include "assert.h"
@@ -25,7 +25,6 @@ portBASE_TYPE ipc_display_toggle_channel(oscilloscope_input_t ch)
 
   assert(ipc_display);
   ret = xQueueSendToBack(ipc_display, &msg, CONFIG_IPC_WAIT);
-  // assert(ret == pdTRUE);
   return ret;
 }
 
@@ -39,7 +38,6 @@ portBASE_TYPE ipc_display_button_highlight(int button)
 
   assert(ipc_display);
   ret = xQueueSendToBack(ipc_display, &msg, CONFIG_IPC_WAIT);
-  //assert(ret == pdTRUE);
   return ret;
 }
 
@@ -60,6 +58,5 @@ portBASE_TYPE ipc_display_send_cmd(msg_display_cmd_t cmd)
 
   assert(ipc_display);
   ret = xQueueSendToBack(ipc_display, &msg, CONFIG_IPC_WAIT);
-  //assert(ret == pdTRUE);
   return ret;
 }

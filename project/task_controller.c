@@ -1,7 +1,5 @@
-/**
- * task_controller:
- *
- * TASK (TODO: WRITE ME!)
+/*
+ * (TODO: WRITE ME!)
  */
 
 #include <stdio.h>
@@ -24,7 +22,6 @@
 static void update_mode(oscilloscope_mode_t new_mode);
 static void update_zoom(void);
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *cmd);
-static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *cmd);
 static portBASE_TYPE handle_msg_subscribe(msg_id_t id, msg_data_t *msg);
 
 /* public variables */
@@ -34,7 +31,6 @@ static ipc_subscribe_msg_t mode;
 static const ipc_loop_t msg_handle_table[] =
 {
   { msg_id_controller_cmd,         handle_msg_cmd },
-  { msg_id_subscribe_measure_rate, handle_msg_subscribe_measure_rate },
   { msg_id_controller_subscribe,   handle_msg_subscribe }
 };
 
@@ -47,7 +43,6 @@ static const ipc_subscribe_table_t ipc_subscribe_table[] =
 void task_controller(void *p)
 {
   ipc_subscribe_init(&mode, msg_id_subscribe_mode);
-//  update_mode(oscilloscope_mode_oscilloscope);
   update_mode(oscilloscope_mode_multimeter);
   update_zoom();
 
@@ -99,6 +94,7 @@ static void update_zoom(void)
   int prescaler;
   int period;
 
+  /* yes, ugly case for this... */
   switch(zoom)
   {
     case 0:
@@ -202,24 +198,6 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
     default:
       return pdFALSE;
   }
-  return pdTRUE;
-}
-
-static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *data)
-{
-  switch(data->subscribe_measure_rate.ch)
-  {
-    case input_channel0:
-    case input_channel1:
-//      printf("|C: RATE(%i)=%u| ",
-//          data->subscribe_measure_rate.ch,
-//          data->subscribe_measure_rate.rate);
-      break;
-
-    default:
-      return pdFALSE;
-  }
-
   return pdTRUE;
 }
 

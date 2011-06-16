@@ -1,8 +1,5 @@
-/**
- * task_input_gpio:
- *
+/*
  * Driver responsible for input from buttons.
- * (For now only 'Key'.)
  */
 
 #include <stdio.h>
@@ -42,8 +39,8 @@ void task_input_gpio(void *p)
       vTaskDelay(50/portTICK_RATE_MS);
       if(new_pin_state == GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9))
       {
-        static int i = 0;
-        switch(++i)
+        static int state = 0;
+        switch(++state)
         {
           case 1:
             ipc_controller_mode_toggle();
@@ -53,7 +50,7 @@ void task_input_gpio(void *p)
             break;
 
           case 4:
-            i = 0;
+            state = 0;
         }
       }
     }

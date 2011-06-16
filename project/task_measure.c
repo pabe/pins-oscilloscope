@@ -133,7 +133,7 @@ void TIM2_IRQHandler(void)
   static measure_data_t buffer[] =
   {
     { { 0 }, input_channel0, 0 }
-    /* code in display does not support multi channel */
+    /* code in display does not support multi-channel */
 	#if 0
     ,{ { 0 }, input_channel1, 0 }
 	#endif

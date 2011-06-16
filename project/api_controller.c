@@ -1,7 +1,5 @@
 /*
- * api_watchdog:
- *
- * API to interface the controller over IPC.
+ * Thread-safe API-interface for the controller.
  */
 
 #include "assert.h"
@@ -65,7 +63,6 @@ portBASE_TYPE ipc_controller_subscribe(
 
   assert(ipc_controller);
   ret = xQueueSendToBack(ipc_controller, &msg, CONFIG_IPC_WAIT);
-  assert(ret == pdTRUE);
   return ret;
 }
 
@@ -81,6 +78,5 @@ portBASE_TYPE ipc_controller_send_cmd(msg_controller_cmd_t cmd)
 
   assert(ipc_controller);
   ret = xQueueSendToBack(ipc_controller, &msg, CONFIG_IPC_WAIT);
-  assert(ret == pdTRUE);
   return ret;
 }

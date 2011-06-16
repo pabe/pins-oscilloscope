@@ -32,6 +32,12 @@ static const ipc_loop_t msg_handle_table[] =
   { msg_id_display_cmd,            handle_msg_cmd },
   { msg_id_display_toggle_channel, handle_msg_toggle_channel }
 };
+static const unsigned short osc_color[] =
+{
+  Red,
+  Magenta
+};
+
 
 void task_display(void *args)
 {
@@ -63,40 +69,97 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 {
 	display_mode = data->subscribe_mode;
 	display_redraw();
-#if 0
-	switch(data->subscribe_mode)
-	{
-		case oscilloscope_mode_oscilloscope:
-			printf("|LOL0|");
-			break;
-
-		case oscilloscope_mode_multimeter:
-			printf("|LOL1)");
-			break;
-
-		default:
-			return pdFALSE;
-	}
-#endif
 
 	return pdTRUE;
 }
 
-#include "stm32f10x_tim.h"
-static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
-{ 
-  static measure_data_t data3;
-  int i;
-  ipc_measure_get_data(&data3);
+static int ch_generic2internal(oscilloscope_input_t ch);
+static void new_osc_sample(const measure_data_t* data);
 
+
+static int ch_generic2internal(oscilloscope_input_t ch)
+{
+  switch(ch)
+  {
+    case input_channel0:
+      return 0;
+
+    case input_channel1:
+      return 1;
+
+    default:
+      ipc_watchdog_signal_error(0);
+      return 0;
+  }
+}
+
+static void new_osc_sample(const measure_data_t* data)
+{
+  int channel = ch_generic2internal(data->ch);
+  int i;
+
+  xSemaphoreTake(lcdLock, portMAX_DELAY);
+  interrupt_off();
+
+  /* first we clear the old line */
+  GLCD_setTextColor(White);
   for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
   {
-      /* we disable all known interrupts or the i2c will go bad */
-      taskDISABLE_INTERRUPTS();
-      TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
-    display_new_measure(data3.ch, data3.data[i], data3.timestamp+i);
-      TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-      taskENABLE_INTERRUPTS();
+    display_show_analog(
+        (display_buffer_index[channel]+i) % DISPLAY_BUFF_SIZE,
+        display_buffer[(display_buffer_index[channel]+i) % DISPLAY_BUFF_SIZE][channel]);
+  }
+
+  GLCD_setTextColor(osc_color[channel]);
+  for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
+  {
+    display_show_analog(display_index(channel), data->data[i]);
+
+    // Update buffer
+    display_buffer[display_index(channel)][channel] = data->data[i];
+    display_buffer_index[channel]++;
+
+
+  }
+
+  interrupt_on();
+  xSemaphoreGive(lcdLock);
+}
+
+static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *msg)
+{ 
+  int i;
+  /* static to save stack */
+  static measure_data_t data;
+  ipc_measure_get_data(&data);
+
+  if(display_buffer_enable[data.ch])
+  {
+    switch(display_mode)
+    {
+      case oscilloscope_mode_oscilloscope:
+        new_osc_sample(&data);
+        break;
+
+      case oscilloscope_mode_multimeter: 
+        /* old code-path */
+        for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
+        {
+          /* we disable all known interrupts or the i2c will go bad */
+          taskDISABLE_INTERRUPTS();
+          TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
+
+          display_new_measure(data.ch, data.data[i], data.timestamp+i);
+
+          TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+          taskENABLE_INTERRUPTS();
+          break;
+
+          default:
+          ipc_watchdog_signal_error(0);
+          break;
+        }
+    }
   }
   return pdTRUE;
 }
@@ -131,45 +194,21 @@ static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data)
   return pdTRUE;
 }
 
-// Call when layout has changed
-void display_redraw(void) {
-  char channel;
-  uint16_t sample; //C89  ;__;
+static void display_redraw(void)
+{
   xSemaphoreTake(lcdLock, portMAX_DELAY);
-    GLCD_clear(White); 	  //Is this the right place to do this?
+  GLCD_clear(White);
   xSemaphoreGive(lcdLock);
-  switch(display_mode) {
-    case oscilloscope_mode_oscilloscope:
-			// Draw interface
-			display_buttons();
-
-			// Redraw buffers
-#if 1
-			for(channel = 0; channel < NUMBER_OF_CHANNELS; channel++) {
-				// Check if channel active
-				if(display_buffer_enable[channel])
-					for(sample = 0; sample < DISPLAY_BUFF_SIZE; sample++) {
-						display_sample(channel, display_buffer[sample][channel]);
-					}
-			}
-#endif 
-			break;
-		case oscilloscope_mode_multimeter:
-			// Draw interface
-			display_buttons();
-			// Output last measurement?
-			break;
-		default:
-			// Whoops?
-			break;
-	}
+	
+  display_buttons();
 }
 
 void display_new_measure(char channel, uint16_t sample, int timestamp) {
 	//printf("[%d,%d,%d=%d]", channel, sample, timestamp, display_buffer_index[channel]);
 	switch(display_mode) {
 		case oscilloscope_mode_oscilloscope: 
-			display_sample(channel, sample);
+      /* dead path */
+      ipc_watchdog_signal_error(0);
 			break;
 		case oscilloscope_mode_multimeter: 
 			
@@ -187,27 +226,11 @@ void display_new_measure(char channel, uint16_t sample, int timestamp) {
 
 // New sample to display, regardless of mode
 void display_sample(char channel, uint16_t sample) {
-  if(display_buffer_enable[channel])
-  {
     switch(display_mode) {
       // Draw new pixel
       case oscilloscope_mode_oscilloscope:
-        // Remove old pixel
-        xSemaphoreTake(lcdLock, portMAX_DELAY);
-
-        //GLCD_setTextColor(Black);
-        GLCD_setTextColor(White);
-        display_show_analog(display_index(channel), display_buffer[display_index(channel)][channel]);
-
-        // Display new pixel
-        GLCD_setTextColor(channel ? Green : Magenta);
-        display_show_analog(display_index(channel), sample);
-
-        xSemaphoreGive(lcdLock);
-
-        // Update buffer
-        display_buffer[display_index(channel)][channel] = sample;
-        display_buffer_index[channel]++;
+      /* dead path */
+      ipc_watchdog_signal_error(0);
 
         break;
 
@@ -220,7 +243,6 @@ void display_sample(char channel, uint16_t sample) {
       default:
         break;
     }
-  }
 }
 
 void display_show_analog(uint16_t x, uint16_t y) {

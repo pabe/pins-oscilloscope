@@ -160,8 +160,10 @@ void TIM2_IRQHandler(void)
       buffer[i].timestamp += API_MEASURE_DATA_CHUNK_SIZE;
     }
 
+#if 0/* this is in the example code but make it application unstable */
     if(xTaskWokenByPost)
       taskYIELD();
+#endif
   }
 }
 

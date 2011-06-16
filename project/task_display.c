@@ -82,6 +82,7 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 	return pdTRUE;
 }
 
+#include "stm32f10x_tim.h"
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data)
 { 
   static measure_data_t data3;
@@ -90,7 +91,12 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
 
   for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
   {
+      /* we disable all known interrupts or the i2c will go bad */
+      taskDISABLE_INTERRUPTS();
+      TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
     display_new_measure(data3.ch, data3.data[i], data3.timestamp+i);
+      TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+      taskENABLE_INTERRUPTS();
   }
   return pdTRUE;
 }

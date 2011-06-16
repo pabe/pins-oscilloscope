@@ -10,7 +10,6 @@
 #include "FreeRTOS.h"
 #include "GLCD.h"
 #include "stm3210c_eval_ioe.h"
-#include "stm32f10x_tim.h"
 #include "task.h"
 #include "semphr.h"
 
@@ -173,13 +172,10 @@ void task_input_touch(void *p) {
     assert(ipc_input_touch);
     if (pdFALSE == xQueueReceive(ipc_input_touch, &msg, timeout)) {
       /* we disable all known interrupts or the i2c will go bad */
-      taskDISABLE_INTERRUPTS();
-      TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
-
+      interrupt_off();
       ts_state = IOE_TS_GetState();
+      interrupt_on();
 
-      TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-      taskENABLE_INTERRUPTS();
 
       if (pressed) {
         if (!ts_state->TouchDetected)

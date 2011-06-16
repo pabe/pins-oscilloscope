@@ -8,20 +8,24 @@
 #include "oscilloscope.h"
 #include "GLCD.h"
 
-uint16_t display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS] = {0};
-int display_buffer_index[NUMBER_OF_CHANNELS] = {0};
-button buttons[NUM_BUTTONS];
-char display_buffer_enable[NUMBER_OF_CHANNELS] = {0};
-int lastWrittenTimeStamp;
+
+extern xSemaphoreHandle lcdLock;
+
+static uint16_t display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS] = {0};
+static int display_buffer_index[NUMBER_OF_CHANNELS] = {0};
+static button buttons[NUM_BUTTONS];
+static char display_buffer_enable[NUMBER_OF_CHANNELS] = {0};
 
 
 /* private functions */
 static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *data);
-// Is this old and should be removed?
-static portBASE_TYPE handle_msg_subscribe_measure_rate(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data);
 static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data);
+static void display_redraw(void);
+static void display_button(int button);
+static void display_buttons(void);
+static void display_show_analog(uint16_t x, uint16_t y);
 
 /* private variables */
 static oscilloscope_mode_t display_mode = oscilloscope_mode_oscilloscope;
@@ -74,6 +78,7 @@ static portBASE_TYPE handle_msg_subscribe_mode(msg_id_t id, msg_data_t *data)
 }
 
 static int ch_generic2internal(oscilloscope_input_t ch);
+static void new_multimeter_sample(const measure_data_t* data);
 static void new_osc_sample(const measure_data_t* data);
 
 
@@ -90,6 +95,52 @@ static int ch_generic2internal(oscilloscope_input_t ch)
     default:
       ipc_watchdog_signal_error(0);
       return 0;
+  }
+}
+
+static void new_multimeter_sample(const measure_data_t* data)
+{
+  int channel = ch_generic2internal(data->ch);
+  static portTickType last_update[NUMBER_OF_CHANNELS] = { 0 };
+
+  if((last_update[channel] + CONFIG_DISPLAY_MULTIMETER_REFRESH_TIME) < xTaskGetTickCount())
+  {
+    static char buffer[15];
+    static const int max_mV = 3300;
+    int mV = (data->data[0]*max_mV)/ADC_MAX;
+    int Line;
+    char ch;
+    last_update[channel] = xTaskGetTickCount();
+
+
+    switch (channel)
+    {
+      case  input_channel0:
+        Line = Line3;
+        ch = 'A';
+        break;
+
+      case  input_channel1:
+        Line = Line4;
+        ch = 'B';
+        break;
+
+      default:
+        ipc_watchdog_signal_error(0);
+        return;
+    }
+    sprintf (buffer, "Channel %c: %i.%03i V", ch, mV/1000,mV%1000);
+
+    xSemaphoreTake(lcdLock, portMAX_DELAY);
+    taskDISABLE_INTERRUPTS();
+    TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
+    
+    GLCD_setTextColor(Black);
+    GLCD_displayStringLn(Line, (unsigned char *) buffer); 
+
+    TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+    taskENABLE_INTERRUPTS();
+    xSemaphoreGive(lcdLock);
   }
 }
 
@@ -128,7 +179,6 @@ static void new_osc_sample(const measure_data_t* data)
 
 static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *msg)
 { 
-  int i;
   /* static to save stack */
   static measure_data_t data;
   ipc_measure_get_data(&data);
@@ -142,23 +192,12 @@ static portBASE_TYPE handle_msg_subscribe_measure_data(msg_id_t id, msg_data_t *
         break;
 
       case oscilloscope_mode_multimeter: 
-        /* old code-path */
-        for(i=0;i<CONFIG_SAMPLE_BUFFER_SIZE;i++)
-        {
-          /* we disable all known interrupts or the i2c will go bad */
-          taskDISABLE_INTERRUPTS();
-          TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
+        new_multimeter_sample(&data);
+        break;
 
-          display_new_measure(data.ch, data.data[i], data.timestamp+i);
-
-          TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-          taskENABLE_INTERRUPTS();
-          break;
-
-          default:
-          ipc_watchdog_signal_error(0);
-          break;
-        }
+      default:
+        ipc_watchdog_signal_error(0);
+        return pdFALSE;
     }
   }
   return pdTRUE;
@@ -177,6 +216,7 @@ static portBASE_TYPE handle_msg_cmd(msg_id_t id, msg_data_t *data)
   }
   return pdTRUE;
 }
+
 static portBASE_TYPE handle_msg_toggle_channel(msg_id_t id, msg_data_t *data)
 {
   switch(data->msg_display_toggle_channel)
@@ -203,49 +243,7 @@ static void display_redraw(void)
   display_buttons();
 }
 
-void display_new_measure(char channel, uint16_t sample, int timestamp) {
-	//printf("[%d,%d,%d=%d]", channel, sample, timestamp, display_buffer_index[channel]);
-	switch(display_mode) {
-		case oscilloscope_mode_oscilloscope: 
-      /* dead path */
-      ipc_watchdog_signal_error(0);
-			break;
-		case oscilloscope_mode_multimeter: 
-			
-			if(timestamp - lastWrittenTimeStamp > 1000){ //Should probably depend on rate.
-				display_sample(channel, sample);
-				lastWrittenTimeStamp = timestamp;
-			}
-			break;
-		default:
-			ipc_watchdog_signal_error(0);
-			break;
-	}
-}
-
-
-// New sample to display, regardless of mode
-void display_sample(char channel, uint16_t sample) {
-    switch(display_mode) {
-      // Draw new pixel
-      case oscilloscope_mode_oscilloscope:
-      /* dead path */
-      ipc_watchdog_signal_error(0);
-
-        break;
-
-        // Update number
-      case oscilloscope_mode_multimeter:
-        display_WriteMultimerDigit(channel, sample);
-        break;
-
-        // Whoops?
-      default:
-        break;
-    }
-}
-
-void display_show_analog(uint16_t x, uint16_t y) {
+static void display_show_analog(uint16_t x, uint16_t y) {
   // REMEMBER TO GRAB LOCK BEFORE CALLING!
 
   // Stupid display has all messed up coordinate system :/
@@ -312,37 +310,4 @@ void display_buttons(void) {
 	}
 }
 
-double voltageConversion(uint16_t val){
-	double maxAdcBits = 4095.0; // Should be > 0 
-	double maxVolts = 3.3;      
-	double voltsPerBit = (maxVolts / (maxAdcBits));
-	return (double)val * voltsPerBit;
-}
-
-void display_WriteMultimerDigit(char channel, uint16_t sample) {
-char buffer[15];
-int Line = 0;
-
-	switch (channel){
-   		case  input_channel0:
-			Line = Line3;
-			//sprintf (buffer, "Chan A: %.1f", voltageConversion(sample));
-			sprintf (buffer, "Chan A: % 4.4f", voltageConversion(sample));
-			break;
-   		case  input_channel1:
-   			Line = Line4;
-			//sprintf (buffer, "Chan B: %.1f", voltageConversion(sample));
-			sprintf (buffer, "Chan B: % 4.4d", sample);
-
-			break;
-		default:
-			//Whoops?
-		break;
-   }
-   			
-   xSemaphoreTake(lcdLock, portMAX_DELAY);
-   GLCD_setTextColor(Black);
-   GLCD_displayStringLn(Line, (unsigned char *) buffer); 
-   xSemaphoreGive(lcdLock);
-}
 

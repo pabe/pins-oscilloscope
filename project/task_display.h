@@ -31,21 +31,8 @@ typedef struct
 void setup_buttons(void);
 Pbutton get_button(u16 button);
 
+
 void task_display(void *args);
-void display_redraw(void);
-void display_sample(char channel, uint16_t sample);
-void display_show_analog(uint16_t x, uint16_t y);
-void display_new_measure(char channel, uint16_t sample, int timestamp);
-void display_button(int button);
-void display_buttons(void);
-void display_WriteMultimerDigit(char channel, uint16_t sample);
-
-extern uint16_t display_buffer[DISPLAY_BUFF_SIZE][NUMBER_OF_CHANNELS]; //This goes to the storage module eventualy
-extern int display_buffer_index[]; //This goes to the storage module eventualy
-
-extern xSemaphoreHandle lcdLock;
-
-
 
 
 
